@@ -11,6 +11,7 @@ import {
   Star,
 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
@@ -26,9 +27,16 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ==============================
+  // =========================================================
+  // WISHLIST STATES
+  // =========================================================
+
+  const [wishlistProducts, setWishlistProducts] = useState([]);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+
+  // =========================================================
   // FILTER STATES
-  // ==============================
+  // =========================================================
 
   const [showFilter, setShowFilter] = useState(false);
 
@@ -41,16 +49,17 @@ const Products = () => {
   const [priceOpen, setPriceOpen] = useState(true);
   const [categoryOpen, setCategoryOpen] = useState(true);
 
-  const navigate= useNavigate();
-  // ==============================
+  const navigate = useNavigate();
+
+  // =========================================================
   // SORT
-  // ==============================
+  // =========================================================
 
   const [sortBy, setSortBy] = useState("relevant");
 
-  // ==============================
+  // =========================================================
   // FETCH PRODUCTS
-  // ==============================
+  // =========================================================
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -92,9 +101,72 @@ const Products = () => {
     fetchProducts();
   }, [categorySlug]);
 
-  // ==============================
+  // =========================================================
+  // FETCH WISHLIST
+  // =========================================================
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
+
+      // Login cheythittillenkil wishlist fetch venda
+      if (!token) {
+        setWishlistProducts([]);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const products =
+          response.data.wishlist?.products || [];
+
+        /*
+          Backend populated products aanenkil:
+          { _id: "...", name: "...", ... }
+
+          Populate cheyyathath aanenkil:
+          "...productId..."
+
+          Randum handle cheyyunnu.
+        */
+
+        setWishlistProducts(
+          products
+            .map((product) =>
+              typeof product === "string"
+                ? product
+                : product?._id
+            )
+            .filter(Boolean)
+        );
+      } catch (error) {
+        console.error(
+          "WISHLIST FETCH ERROR:",
+          error
+        );
+
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setWishlistProducts([]);
+        }
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  // =========================================================
   // HELPER FUNCTIONS
-  // ==============================
+  // =========================================================
 
   const getActiveVariants = (product) => {
     if (!Array.isArray(product?.variants)) {
@@ -112,7 +184,8 @@ const Products = () => {
     }
 
     const price = Number(variant.price) || 0;
-    const discount = Number(variant.discountPercent) || 0;
+    const discount =
+      Number(variant.discountPercent) || 0;
 
     if (discount <= 0) {
       return price;
@@ -163,9 +236,124 @@ const Products = () => {
     );
   };
 
-  // ==============================
+  // =========================================================
+  // WISHLIST HELPERS
+  // =========================================================
+
+  const isInWishlist = (productId) => {
+    return wishlistProducts.includes(productId);
+  };
+
+  // =========================================================
+  // WISHLIST ADD / REMOVE
+  // =========================================================
+
+  const handleWishlist = async (product) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error(
+        "Please login to add products to wishlist"
+      );
+      navigate("/login");
+      return;
+    }
+
+    const productId = product._id;
+
+    const alreadyInWishlist =
+      wishlistProducts.includes(productId);
+
+    try {
+      setWishlistLoadingId(productId);
+
+      let response;
+
+      // =====================================================
+      // REMOVE
+      // =====================================================
+
+      if (alreadyInWishlist) {
+        response = await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/wishlist/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) =>
+          prev.filter((id) => id !== productId)
+        );
+      }
+
+      // =====================================================
+      // ADD
+      // =====================================================
+
+      else {
+        response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            productId: productId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) => [
+          ...prev,
+          productId,
+        ]);
+      }
+
+      // =====================================================
+      // SONNER SUCCESS MESSAGE
+      // =====================================================
+
+      toast.success(
+        response.data.message ||
+          (alreadyInWishlist
+            ? "Removed from wishlist"
+            : "Added to wishlist")
+      );
+    } catch (error) {
+      console.error(
+        "WISHLIST ERROR:",
+        error
+      );
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        setWishlistProducts([]);
+
+        toast.error(
+          error.response?.data?.message ||
+            "Please login again"
+        );
+
+        navigate("/login");
+        return;
+      }
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update wishlist"
+      );
+    } finally {
+      setWishlistLoadingId(null);
+    }
+  };
+
+  // =========================================================
   // AVAILABILITY COUNTS
-  // ==============================
+  // =========================================================
 
   const availableCount = products.filter(
     (product) => isProductInStock(product)
@@ -175,9 +363,9 @@ const Products = () => {
     (product) => !isProductInStock(product)
   ).length;
 
-  // ==============================
+  // =========================================================
   // PRICE RANGE
-  // ==============================
+  // =========================================================
 
   const priceRange = useMemo(() => {
     const prices = products
@@ -207,9 +395,9 @@ const Products = () => {
     };
   }, [products]);
 
-  // ==============================
+  // =========================================================
   // FILTER PRODUCTS
-  // ==============================
+  // =========================================================
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -268,9 +456,9 @@ const Products = () => {
     maxPrice,
   ]);
 
-  // ==============================
+  // =========================================================
   // SORT PRODUCTS
-  // ==============================
+  // =========================================================
 
   const sortedProducts = useMemo(() => {
     const result = [...filteredProducts];
@@ -301,8 +489,11 @@ const Products = () => {
 
     if (sortBy === "price-low") {
       result.sort((a, b) => {
-        const variantA = getDisplayVariant(a);
-        const variantB = getDisplayVariant(b);
+        const variantA =
+          getDisplayVariant(a);
+
+        const variantB =
+          getDisplayVariant(b);
 
         return (
           getFinalPrice(variantA) -
@@ -313,8 +504,11 @@ const Products = () => {
 
     if (sortBy === "price-high") {
       result.sort((a, b) => {
-        const variantA = getDisplayVariant(a);
-        const variantB = getDisplayVariant(b);
+        const variantA =
+          getDisplayVariant(a);
+
+        const variantB =
+          getDisplayVariant(b);
 
         return (
           getFinalPrice(variantB) -
@@ -342,9 +536,9 @@ const Products = () => {
     return result;
   }, [filteredProducts, sortBy]);
 
-  // ==============================
+  // =========================================================
   // CLEAR FILTERS
-  // ==============================
+  // =========================================================
 
   const clearFilters = () => {
     setAvailability("all");
@@ -353,9 +547,82 @@ const Products = () => {
     setSortBy("relevant");
   };
 
-  // ==============================
+  // =========================================================
+  // ADD TO CART
+  // =========================================================
+
+  const handleAddToCart = async (product) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error(
+          "Please login to add products to cart"
+        );
+        navigate("/login");
+        return;
+      }
+
+      const variant = getDisplayVariant(product);
+
+      if (!variant) {
+        toast.error(
+          "This product is currently unavailable"
+        );
+        return;
+      }
+
+      if (Number(variant.stock) <= 0) {
+        toast.error(
+          "This product is out of stock"
+        );
+        return;
+      }
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/cart`,
+        {
+          productId: product._id,
+          variantId: variant._id,
+          quantity: 1,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error(
+        "ADD TO CART ERROR:",
+        error
+      );
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        toast.error(
+          error.response?.data?.message ||
+            "Please login again"
+        );
+
+        navigate("/login");
+        return;
+      }
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to add product to cart"
+      );
+    }
+  };
+
+  // =========================================================
   // LOADING
-  // ==============================
+  // =========================================================
 
   if (loading) {
     return (
@@ -390,9 +657,9 @@ const Products = () => {
     );
   }
 
-  // ==============================
+  // =========================================================
   // ERROR
-  // ==============================
+  // =========================================================
 
   if (error) {
     return (
@@ -920,8 +1187,7 @@ const Products = () => {
                         {priceRange.min.toLocaleString(
                           "en-IN"
                         )}
-                        {" - "}
-                        ₹
+                        {" - "}₹
                         {priceRange.max.toLocaleString(
                           "en-IN"
                         )}
@@ -1076,6 +1342,15 @@ const Products = () => {
                           product
                         );
 
+                      const productInWishlist =
+                        isInWishlist(
+                          product._id
+                        );
+
+                      const wishlistIsLoading =
+                        wishlistLoadingId ===
+                        product._id;
+
                       return (
                         <div
                           key={product._id}
@@ -1110,7 +1385,11 @@ const Products = () => {
                                   group-hover:scale-[1.04]
                                   cursor-pointer
                                 "
-                                onClick={()=>navigate(`/product/${product._id}`)}
+                                onClick={() =>
+                                  navigate(
+                                    `/product/${product._id}`
+                                  )
+                                }
                               />
                             ) : (
                               <div
@@ -1172,11 +1451,19 @@ const Products = () => {
                               </span>
                             )}
 
-                            {/* WISHLIST */}
+                            {/* =================================================
+                                WISHLIST BUTTON
+                            ================================================= */}
 
                             <button
                               type="button"
-                              className="
+                              onClick={() =>
+                                handleWishlist(product)
+                              }
+                              disabled={
+                                wishlistIsLoading
+                              }
+                              className={`
                                 absolute
                                 right-4
                                 top-4
@@ -1186,20 +1473,37 @@ const Products = () => {
                                 items-center
                                 justify-center
                                 rounded-full
-                                bg-white
-                                text-gray-800
                                 shadow-sm
                                 transition
                                 duration-200
-                                hover:bg-[#72c500]
-                                hover:text-white
-                              "
-                              aria-label="Add to wishlist"
+                                ${
+                                  productInWishlist
+                                    ? "bg-[#72c500] text-white"
+                                    : "bg-white text-gray-800 hover:bg-[#72c500] hover:text-white"
+                                }
+                                ${
+                                  wishlistIsLoading
+                                    ? "cursor-not-allowed opacity-60"
+                                    : "cursor-pointer"
+                                }
+                              `}
+                              aria-label={
+                                productInWishlist
+                                  ? "Remove from wishlist"
+                                  : "Add to wishlist"
+                              }
                             >
+
                               <Heart
                                 size={18}
                                 strokeWidth={1.8}
+                                fill={
+                                  productInWishlist
+                                    ? "currentColor"
+                                    : "none"
+                                }
                               />
+
                             </button>
 
                           </div>
@@ -1241,7 +1545,11 @@ const Products = () => {
                                 group-hover:text-[#72c500]
                                 cursor-pointer
                               "
-                              onClick={()=>navigate(`/product/${product._id}`)}
+                              onClick={() =>
+                                navigate(
+                                  `/product/${product._id}`
+                                )
+                              }
                             >
                               {product.name}
                             </h2>
@@ -1374,6 +1682,11 @@ const Products = () => {
 
                             <button
                               type="button"
+                              onClick={() =>
+                                handleAddToCart(
+                                  product
+                                )
+                              }
                               disabled={
                                 !inStock ||
                                 !variant
@@ -1401,12 +1714,14 @@ const Products = () => {
                                 }
                               `}
                             >
+
                               <ShoppingCart size={16} />
 
                               {inStock &&
                               variant
                                 ? "Add to cart"
                                 : "Out of stock"}
+
                             </button>
 
                           </div>
@@ -1730,8 +2045,7 @@ const Products = () => {
                   {priceRange.min.toLocaleString(
                     "en-IN"
                   )}
-                  {" - "}
-                  ₹
+                  {" - "}₹
                   {priceRange.max.toLocaleString(
                     "en-IN"
                   )}
