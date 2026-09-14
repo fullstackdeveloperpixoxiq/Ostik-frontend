@@ -13,7 +13,7 @@ const LatestProducts = () => {
     const fetchLatestProducts = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.REACT_APP_API_URL}/api/product`
+          `${import.meta.env.VITE_API_URL}/api/product`
         );
 
         // Backend already sorts by createdAt DESC
@@ -85,7 +85,7 @@ const LatestProducts = () => {
             try {
 
               const response = await axios.get(
-                `${import.meta.env.REACT_APP_API_URL}/api/variant/product/${product._id}`
+                `${import.meta.env.VITE_API_URL}/api/variant/product/${product._id}`
               );
 
               return {

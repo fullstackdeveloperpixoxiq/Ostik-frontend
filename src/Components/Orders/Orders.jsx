@@ -63,7 +63,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
       }
 
       const response = await axios.get(
-        `${import.meta.env.REACT_APP_API_URL}/api/order`,
+        `${import.meta.env.VITE_API_URL}/api/order`,
         {
           withCredentials: true,
           headers: {
@@ -93,7 +93,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
         setReviewLoading(true);
 
         const response= await axios(
-          `${import.meta.env.REACT_APP_API_URL}/api/review/my-reviews`,
+          `${import.meta.env.VITE_API_URL}/api/review/my-reviews`,
           {
              withCredentials: true,
         headers: {
@@ -131,7 +131,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
       }
 
       const response = await axios.put(
-        `${import.meta.env.REACT_APP_API_URL}/api/order/${orderId}/cancel`,
+        `${import.meta.env.VITE_API_URL}/api/order/${orderId}/cancel`,
         {},
         {
           withCredentials: true,
@@ -315,7 +315,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
       });
 
       const response = await axios.post(
-        `${import.meta.env.REACT_APP_API_URL}/api/review`,
+        `${import.meta.env.VITE_API_URL}/api/review`,
           formData,
           {
             withCredentials: true,

@@ -69,7 +69,7 @@ const Profile = () => {
       setLoading(true);
 
       const response = await axios.get(
-        `${import.meta.env.REACT_APP_API_URL}/api/user/profile`,
+        `${import.meta.env.VITE_API_URL}/api/user/profile`,
         {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -180,7 +180,7 @@ const Profile = () => {
       }
 
       const response = await axios.put(
-        `${import.meta.env.REACT_APP_API_URL}/api/user/profile`,
+        `${import.meta.env.VITE_API_URL}/api/user/profile`,
         formData,
         {
           headers: {
@@ -273,8 +273,8 @@ const Profile = () => {
       setSavingAddress(true);
 
       const url = editingAddressId
-        ? `${import.meta.env.REACT_APP_API_URL}/api/user/profile/address/${editingAddressId}`
-        : `${import.meta.env.REACT_APP_API_URL}/api/user/profile`;
+        ? `${import.meta.env.VITE_API_URL}/api/user/profile/address/${editingAddressId}`
+        : `${import.meta.env.VITE_API_URL}/api/user/profile`;
 
       let response;
 
@@ -339,7 +339,7 @@ const Profile = () => {
 
     try {
       const response = await axios.delete(
-        `${import.meta.env.REACT_APP_API_URL}/api/user/profile/address/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/user/profile/address/${id}`,
         {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -126,7 +126,7 @@ const VerifyOTP = () => {
 
     try {
       const response = await axios.post(
-        `${import.meta.env.REACT_APP_API_URL}/api/user/verify-otp`,
+        `${import.meta.env.VITE_API_URL}/api/user/verify-otp`,
         {
           userId,
           otp: enteredOtp,

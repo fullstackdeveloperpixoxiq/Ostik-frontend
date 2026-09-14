@@ -11,7 +11,7 @@ const SuperBanner = () => {
     const fetchBanners = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.REACT_APP_API_URL}/api/banner`
+          `${import.meta.env.VITE_API_URL}/api/banner`
         );
 
         setBanners(response.data.banners || []);

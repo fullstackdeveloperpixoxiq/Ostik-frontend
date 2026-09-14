@@ -55,7 +55,7 @@ const ProductDetail = () => {
         setError("");
 
         const response = await axios.get(
-          `${import.meta.env.REACT_APP_API_URL}/api/product/${id}`
+          `${import.meta.env.VITE_API_URL}/api/product/${id}`
         );
 
         const data = response.data;
@@ -90,7 +90,7 @@ const ProductDetail = () => {
         setReviewLoading(true);
 
         const response = await axios.get(
-          `${import.meta.env.REACT_APP_API_URL}/api/review/product/${id}`
+          `${import.meta.env.VITE_API_URL}/api/review/product/${id}`
         );
 
         const data = response.data;

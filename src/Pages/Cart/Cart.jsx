@@ -36,7 +36,7 @@ const Cart = () => {
       }
 
       const response = await axios.get(
-        `${import.meta.env.REACT_APP_API_URL}/api/cart`,
+        `${import.meta.env.VITE_API_URL}/api/cart`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -83,7 +83,7 @@ const Cart = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
-        `${import.meta.env.REACT_APP_API_URL}/api/cart/${variantId}`,
+        `${import.meta.env.VITE_API_URL}/api/cart/${variantId}`,
         {
           quantity: newQuantity,
         },
@@ -116,7 +116,7 @@ const Cart = () => {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        `${import.meta.env.REACT_APP_API_URL}/api/cart/${variantId}`,
+        `${import.meta.env.VITE_API_URL}/api/cart/${variantId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -151,7 +151,7 @@ const Cart = () => {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        `${import.meta.env.REACT_APP_API_URL}/api/cart`,
+        `${import.meta.env.VITE_API_URL}/api/cart`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
