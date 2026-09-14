@@ -31,7 +31,7 @@ const Wishlist = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/wishlist",
+        `${import.meta.env.REACT_APP_API_URL}/api/wishlist`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ const Wishlist = () => {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        `http://localhost:5000/api/wishlist/${productId}`,
+        `${import.meta.env.REACT_APP_API_URL}/api/wishlist/${productId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ const Wishlist = () => {
       const token = localStorage.getItem("token");
 
       await axios.delete(
-        "http://localhost:5000/api/wishlist",
+        `${import.meta.env.REACT_APP_API_URL}/api/wishlist`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

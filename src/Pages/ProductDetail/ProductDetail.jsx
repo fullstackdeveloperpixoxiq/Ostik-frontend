@@ -18,6 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
+import axios from "axios";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -53,17 +54,11 @@ const ProductDetail = () => {
         setLoading(true);
         setError("");
 
-        const response = await fetch(
-          `http://localhost:5000/api/product/${id}`
+        const response = await axios.get(
+          `${import.meta.env.REACT_APP_API_URL}/api/product/${id}`
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Failed to fetch product"
-          );
-        }
+        const data = response.data;
 
         setProduct(data.product);
         setVariants(data.variants || []);
@@ -94,17 +89,11 @@ const ProductDetail = () => {
       try {
         setReviewLoading(true);
 
-        const response = await fetch(
-          `http://localhost:5000/api/review/product/${id}`
+        const response = await axios.get(
+          `${import.meta.env.REACT_APP_API_URL}/api/review/product/${id}`
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Failed to fetch reviews"
-          );
-        }
+        const data = response.data;
 
         setReviews(data.reviews || []);
       } catch (err) {

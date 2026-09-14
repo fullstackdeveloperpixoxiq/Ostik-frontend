@@ -51,7 +51,7 @@ const Checkout = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/cart",
+        `${import.meta.env.REACT_APP_API_URL}/api/cart`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -181,7 +181,7 @@ const Checkout = () => {
         localStorage.getItem("token");
 
       const response = await axios.put(
-        `http://localhost:5000/api/cart/${variantId}`,
+        `${import.meta.env.REACT_APP_API_URL}/api/cart/${variantId}`,
         {
           quantity: newQuantity,
         },
@@ -343,7 +343,7 @@ const Checkout = () => {
       // Create Razorpay order
       const paymentResponse =
         await axios.post(
-          "http://localhost:5000/api/payment/create",
+          `${import.meta.env.REACT_APP_API_URL}/api/payment/create`,
           {
             orderId: order._id,
           },
@@ -392,7 +392,7 @@ const Checkout = () => {
 
             const verifyResponse =
               await axios.post(
-                "http://localhost:5000/api/payment/verify",
+                `${import.meta.env.REACT_APP_API_URL}/api/payment/verify`,
                 {
                   razorpay_order_id:
                     response.razorpay_order_id,
@@ -529,7 +529,7 @@ const Checkout = () => {
       // Create order
       const response =
         await axios.post(
-          "http://localhost:5000/api/order",
+          `${import.meta.env.REACT_APP_API_URL}/api/order`,
           {
             shippingAddress,
             paymentMethod,

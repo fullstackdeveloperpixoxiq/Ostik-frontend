@@ -34,7 +34,7 @@ const OrderSuccess = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/order/${orderId}`,
+        `${import.meta.env.REACT_APP_API_URL}/api/order/${orderId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

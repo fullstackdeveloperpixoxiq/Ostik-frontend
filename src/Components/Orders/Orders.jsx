@@ -62,25 +62,17 @@ const [reviewLoading, setReviewLoading] = useState(false);
         throw new Error("Please login to view your orders");
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/order",
+      const response = await axios.get(
+        `${import.meta.env.REACT_APP_API_URL}/api/order`,
         {
-          method: "GET",
-          credentials: "include",
+          withCredentials: true,
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to fetch orders"
-        );
-      }
+      const data = response.data;
 
       setOrders(data.orders || []);
     } catch (err) {
@@ -101,15 +93,16 @@ const [reviewLoading, setReviewLoading] = useState(false);
         setReviewLoading(true);
 
         const response= await axios(
-            "http://localhost:5000/api/review/my-reviews",{
-                method: "GET",
-                credentials:"include",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                }
-            }
+          `${import.meta.env.REACT_APP_API_URL}/api/review/my-reviews`,
+          {
+             withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+           },
+          }
         );
+
+        const data= response.data
          
     setMyReviews(data.reviews || []);
     }
@@ -137,25 +130,18 @@ const [reviewLoading, setReviewLoading] = useState(false);
         throw new Error("Please login to cancel the order");
       }
 
-      const response = await fetch(
-        `http://localhost:5000/api/order/${orderId}/cancel`,
+      const response = await axios.put(
+        `${import.meta.env.REACT_APP_API_URL}/api/order/${orderId}/cancel`,
+        {},
         {
-          method: "PUT",
-          credentials: "include",
+          withCredentials: true,
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Unable to cancel order"
-        );
-      }
+      const data = response.data;
 
       // Update order locally
       setOrders((prevOrders) =>
@@ -328,22 +314,19 @@ const [reviewLoading, setReviewLoading] = useState(false);
         formData.append("images", file);
       });
 
-      const response = await fetch(
-        "http://localhost:5000/api/review",
-        {
-          method: "POST",
-
-          credentials: "include",
-
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-
-          body: formData,
-        }
+      const response = await axios.post(
+        `${import.meta.env.REACT_APP_API_URL}/api/review`,
+          formData,
+          {
+            withCredentials: true,
+            headers: {
+              Autthorization: `Bearer ${token}`
+            }
+          }
+        
       );
 
-      const data = await response.json();
+      const data = response.data;
 
       if (!response.ok) {
         throw new Error(

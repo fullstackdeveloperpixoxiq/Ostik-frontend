@@ -57,7 +57,7 @@ const Navbar = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/category"
+          `${import.meta.env.REACT_APP_API_URL}/api/category`
         );
 
         setCategories(response.data.categories || []);
@@ -117,7 +117,7 @@ const Navbar = () => {
       setSearchOpen(true);
 
       const response = await axios.get(
-        "http://localhost:5000/api/product",
+        `${import.meta.env.REACT_APP_API_URL}/api/product`,
         {
           params: {
             search: trimmedValue,

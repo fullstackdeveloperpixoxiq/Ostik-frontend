@@ -15,6 +15,7 @@ import {
   Camera,
 } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -67,29 +68,16 @@ const Profile = () => {
 
       setLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/api/user/profile",
+      const response = await axios.get(
+        `${import.meta.env.REACT_APP_API_URL}/api/user/profile`,
         {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-
-          navigate("/login");
-          return;
-        }
-
-        throw new Error(data.message || "Failed to fetch profile");
-      }
+      const data = response.data;
 
       setUser(data.user);
 
@@ -103,7 +91,20 @@ const Profile = () => {
       setProfileImageFile(null);
     } catch (error) {
       console.error("Profile error:", error);
-      toast.error(error.message || "Unable to load profile");
+
+       if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      navigate("/login");
+      return;
+    }
+
+      toast.error(
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to load profile"
+      );
     } finally {
       setLoading(false);
     }
@@ -178,26 +179,19 @@ const Profile = () => {
         formData.append("profileImage", profileImageFile);
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/user/profile",
+      const response = await axios.put(
+        `${import.meta.env.REACT_APP_API_URL}/api/user/profile`,
+        formData,
         {
-          method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to update profile"
-        );
-      }
-
-      toast.success("Profile updated successfully");
+      toast.success(data.message || "Profile updated successfully");
 
       setEditMode(false);
       setProfileImageFile(null);
@@ -206,8 +200,11 @@ const Profile = () => {
       await fetchProfile();
     } catch (error) {
       console.error("Update profile error:", error);
+
       toast.error(
-        error.message || "Failed to update profile"
+        error.response?.data?.message ||
+        error.message ||
+        "Profile updated successfully"
       );
     } finally {
       setSavingProfile(false);
@@ -276,27 +273,35 @@ const Profile = () => {
       setSavingAddress(true);
 
       const url = editingAddressId
-        ? `http://localhost:5000/api/user/profile/address/${editingAddressId}`
-        : "http://localhost:5000/api/user/profile";
+        ? `${import.meta.env.REACT_APP_API_URL}/api/user/profile/address/${editingAddressId}`
+        : `${import.meta.env.REACT_APP_API_URL}/api/user/profile`;
 
-      const method = editingAddressId ? "PUT" : "POST";
+      let response;
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(addressForm),
-      });
 
-      const data = await response.json();
+    if (editingAddressId) {
+      response = await axios.put(
+        url,
+        addressForm,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } else {
+      response = await axios.post(
+        url,
+        addressForm,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    }
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to save address"
-        );
-      }
+      const data = response.data;
 
       toast.success(
         editingAddressId
@@ -312,7 +317,9 @@ const Profile = () => {
       console.error("Address error:", error);
 
       toast.error(
-        error.message || "Failed to save address"
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to save adress"
       );
     } finally {
       setSavingAddress(false);
@@ -331,32 +338,28 @@ const Profile = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/user/profile/address/${id}`,
+      const response = await axios.delete(
+        `${import.meta.env.REACT_APP_API_URL}/api/user/profile/address/${id}`,
         {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to delete address"
-        );
-      }
-
-      toast.success("Address deleted successfully");
+      toast.success(
+        data.message || "Address deleted successfully");
 
       await fetchProfile();
     } catch (error) {
       console.error("Delete address error:", error);
 
       toast.error(
-        error.message || "Failed to delete address"
+       error.response?.data?.message ||
+       error.message ||
+       "Failed to delete address"
       );
     }
   };

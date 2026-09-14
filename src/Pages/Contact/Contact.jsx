@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
+import axios from "axios";
 
 const Contact = () => {
 
@@ -73,31 +74,18 @@ const Contact = () => {
       setLoading(true);
 
 
-      const response = await fetch(
-        "http://localhost:5000/api/contact",
+      const response = await axios.post(
+        `${import.meta.env.REACT_APP_API_URL}/api/contact`,
+        formData,
         {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify(formData),
-        }
+      headers: {
+      "Content-Type": "application/json",
+    },
+  }
       );
 
 
-      const data = await response.json();
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.message ||
-            "Failed to send message"
-        );
-
-      }
+      const data = response.data;
 
 
       toast.success(

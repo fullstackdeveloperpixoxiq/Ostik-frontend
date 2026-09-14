@@ -9,7 +9,7 @@ const Category = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/category"
+          `${import.meta.env.REACT_APP_API_URL}/api/category`
         );
 
         setCategories(response.data.categories || []);

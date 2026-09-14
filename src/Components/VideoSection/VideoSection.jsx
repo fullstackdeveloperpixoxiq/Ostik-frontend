@@ -10,7 +10,7 @@ const VideoSection = () => {
     const fetchVideoSection = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/video-section"
+          `${import.meta.env.REACT_APP_API_URL}/api/video-section`
         );
 
         if (response.data.success) {

@@ -32,7 +32,7 @@ const Login = () => {
   setLoading(true);
 
   try { 
-  const response = await axios.post( "http://localhost:5000/api/user/login", 
+  const response = await axios.post( `${import.meta.env.REACT_APP_API_URL}/api/user/login`, 
     formData ); 
 
     // Show backend success message 

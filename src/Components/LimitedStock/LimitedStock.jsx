@@ -10,7 +10,7 @@ const LimitedStock = () => {
     const fetchLimitedStock = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/product/limited-stock"
+          `${import.meta.env.REACT_APP_API_URL}/api/product/limited-stock`
         );
 
         setProducts(response.data.products || []);

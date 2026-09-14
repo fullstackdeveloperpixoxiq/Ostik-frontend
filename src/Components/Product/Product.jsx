@@ -58,7 +58,7 @@ const Products = () => {
         setLoading(true);
         setError("");
 
-        let url = "http://localhost:5000/api/product";
+        let url = `${import.meta.env.REACT_APP_API_URL}/api/product`;
 
         if (categorySlug) {
           url += `?category=${categorySlug}`;
