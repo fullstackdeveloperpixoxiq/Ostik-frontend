@@ -2,12 +2,24 @@ import { useEffect, useState } from "react";
 import { Heart, ArrowRight, Star } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const HotSelling = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const navigate= useNavigate();
+  // =========================================================
+  // WISHLIST STATES
+  // =========================================================
+
+  const [wishlistProducts, setWishlistProducts] = useState([]);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+
+  const navigate = useNavigate();
+
+  // =========================================================
+  // FETCH HOT SELLING PRODUCTS
+  // =========================================================
 
   useEffect(() => {
     const fetchHotSelling = async () => {
@@ -18,7 +30,10 @@ const HotSelling = () => {
 
         setProducts(response.data.products || []);
       } catch (error) {
-        console.log("Error fetching hot selling products:", error);
+        console.log(
+          "Error fetching hot selling products:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -27,9 +42,189 @@ const HotSelling = () => {
     fetchHotSelling();
   }, []);
 
-  // --------------------------------
-  // Get variant to display
-  // --------------------------------
+  // =========================================================
+  // FETCH WISHLIST
+  // =========================================================
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
+
+      // Login cheythittillenkil wishlist fetch venda
+      if (!token) {
+        setWishlistProducts([]);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const products =
+          response.data.wishlist?.products || [];
+
+        /*
+          Backend populated products aanenkil:
+          { _id: "...", name: "...", ... }
+
+          Populate cheyyathath aanenkil:
+          "...productId..."
+
+          Randum handle cheyyunnu.
+        */
+
+        setWishlistProducts(
+          products
+            .map((product) =>
+              typeof product === "string"
+                ? product
+                : product?._id
+            )
+            .filter(Boolean)
+        );
+      } catch (error) {
+        console.error(
+          "WISHLIST FETCH ERROR:",
+          error
+        );
+
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          setWishlistProducts([]);
+        }
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  // =========================================================
+  // WISHLIST HELPERS
+  // =========================================================
+
+  const isInWishlist = (productId) => {
+    return wishlistProducts.includes(productId);
+  };
+
+  // =========================================================
+  // WISHLIST ADD / REMOVE
+  // =========================================================
+
+  const handleWishlist = async (product) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error(
+        "Please login to add products to wishlist"
+      );
+
+      navigate("/login");
+      return;
+    }
+
+    const productId = product._id;
+
+    const alreadyInWishlist =
+      wishlistProducts.includes(productId);
+
+    try {
+      setWishlistLoadingId(productId);
+
+      let response;
+
+      // =====================================================
+      // REMOVE
+      // =====================================================
+
+      if (alreadyInWishlist) {
+        response = await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/wishlist/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) =>
+          prev.filter((id) => id !== productId)
+        );
+      }
+
+      // =====================================================
+      // ADD
+      // =====================================================
+
+      else {
+        response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            productId: productId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) => [
+          ...prev,
+          productId,
+        ]);
+      }
+
+      // =====================================================
+      // SUCCESS MESSAGE
+      // =====================================================
+
+      toast.success(
+        response.data.message ||
+          (alreadyInWishlist
+            ? "Removed from wishlist"
+            : "Added to wishlist")
+      );
+    } catch (error) {
+      console.error(
+        "WISHLIST ERROR:",
+        error
+      );
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        setWishlistProducts([]);
+
+        toast.error(
+          error.response?.data?.message ||
+            "Please login again"
+        );
+
+        navigate("/login");
+        return;
+      }
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to update wishlist"
+      );
+    } finally {
+      setWishlistLoadingId(null);
+    }
+  };
+
+  // =========================================================
+  // GET VARIANT TO DISPLAY
+  // =========================================================
 
   const getDisplayVariant = (product) => {
     const activeVariants = (product.variants || []).filter(
@@ -49,13 +244,15 @@ const HotSelling = () => {
         lowest.price -
         (lowest.price * lowest.discountPercent) / 100;
 
-      return currentFinalPrice < lowestFinalPrice ? current : lowest;
+      return currentFinalPrice < lowestFinalPrice
+        ? current
+        : lowest;
     });
   };
 
-  // --------------------------------
-  // Get highest discount
-  // --------------------------------
+  // =========================================================
+  // GET HIGHEST DISCOUNT
+  // =========================================================
 
   const getMaxDiscount = (product) => {
     const activeVariants = (product.variants || []).filter(
@@ -73,9 +270,9 @@ const HotSelling = () => {
     );
   };
 
-  // --------------------------------
-  // Calculate final price
-  // --------------------------------
+  // =========================================================
+  // CALCULATE FINAL PRICE
+  // =========================================================
 
   const getFinalPrice = (variant) => {
     if (!variant) return 0;
@@ -86,9 +283,9 @@ const HotSelling = () => {
     );
   };
 
-  // --------------------------------
-  // Loading
-  // --------------------------------
+  // =========================================================
+  // LOADING
+  // =========================================================
 
   if (loading) {
     return (
@@ -119,9 +316,9 @@ const HotSelling = () => {
     );
   }
 
-  // --------------------------------
-  // No products
-  // --------------------------------
+  // =========================================================
+  // NO PRODUCTS
+  // =========================================================
 
   if (!products.length) {
     return null;
@@ -150,7 +347,10 @@ const HotSelling = () => {
         <a
           href="/products"
           className="hidden items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#76B900] sm:flex"
-          onClick={()=>navigate("/products")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/products");
+          }}
         >
           Explore All Products
           <ArrowRight size={18} />
@@ -176,6 +376,12 @@ const HotSelling = () => {
               product.images?.[0] ||
               "";
 
+            const productInWishlist =
+              isInWishlist(product._id);
+
+            const wishlistIsLoading =
+              wishlistLoadingId === product._id;
+
             return (
               <div className="group relative overflow-hidden rounded-3xl bg-gray-50">
 
@@ -186,7 +392,12 @@ const HotSelling = () => {
                     <img
                       src={image}
                       alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
+                      onClick={() =>
+                        navigate(
+                          `/product/${product._id}`
+                        )
+                      }
                     />
                   )}
 
@@ -200,9 +411,47 @@ const HotSelling = () => {
                   {/* Wishlist */}
                   <button
                     type="button"
-                    className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition-all hover:bg-[#00e603] hover:text-white"
+                    onClick={() =>
+                      handleWishlist(product)
+                    }
+                    disabled={wishlistIsLoading}
+                    className={`
+                      absolute
+                      right-5
+                      top-5
+                      flex
+                      h-10
+                      w-10
+                      items-center
+                      justify-center
+                      rounded-full
+                      shadow-sm
+                      transition-all
+                      ${
+                        productInWishlist
+                          ? "bg-[#00e603] text-white"
+                          : "bg-white text-gray-700 hover:bg-[#00e603] hover:text-white"
+                      }
+                      ${
+                        wishlistIsLoading
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer"
+                      }
+                    `}
+                    aria-label={
+                      productInWishlist
+                        ? "Remove from wishlist"
+                        : "Add to wishlist"
+                    }
                   >
-                    <Heart size={19} />
+                    <Heart
+                      size={19}
+                      fill={
+                        productInWishlist
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
                   </button>
                 </div>
 
@@ -228,7 +477,14 @@ const HotSelling = () => {
                   </div>
 
                   {/* Product Name */}
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <h3
+                    className="cursor-pointer text-xl font-semibold text-gray-900 transition-colors hover:text-[#76B900]"
+                    onClick={() =>
+                      navigate(
+                        `/product/${product._id}`
+                      )
+                    }
+                  >
                     {product.name}
                   </h3>
 
@@ -256,12 +512,17 @@ const HotSelling = () => {
                   )}
 
                   {/* View Product */}
-                  <a
-                    href={`/products/${product._id}`}
-                    className="mt-5 block w-full rounded-full bg-gray-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#00ff03]"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/product/${product._id}`
+                      )
+                    }
+                    className="mt-5 block w-full cursor-pointer rounded-full bg-gray-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#00ff03]"
                   >
                     View Product
-                  </a>
+                  </button>
 
                 </div>
               </div>
@@ -284,6 +545,12 @@ const HotSelling = () => {
               product.images?.[0] ||
               "";
 
+            const productInWishlist =
+              isInWishlist(product._id);
+
+            const wishlistIsLoading =
+              wishlistLoadingId === product._id;
+
             return (
               <div
                 key={product._id}
@@ -297,7 +564,12 @@ const HotSelling = () => {
                     <img
                       src={image}
                       alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
+                      onClick={() =>
+                        navigate(
+                          `/product/${product._id}`
+                        )
+                      }
                     />
                   )}
 
@@ -329,7 +601,14 @@ const HotSelling = () => {
                   </div>
 
                   {/* Product Name */}
-                  <h3 className="font-semibold text-gray-900">
+                  <h3
+                    className="cursor-pointer font-semibold text-gray-900 transition-colors hover:text-[#76B900]"
+                    onClick={() =>
+                      navigate(
+                        `/product/${product._id}`
+                      )
+                    }
+                  >
                     {product.name}
                   </h3>
 
@@ -359,22 +638,65 @@ const HotSelling = () => {
                   )}
 
                   {/* View Product */}
-                  <a
-                    href={`/products/${product._id}`}
-                    className="mt-4 flex w-fit items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#76B900]"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/product/${product._id}`
+                      )
+                    }
+                    className="mt-4 flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#76B900]"
                   >
                     View Product
                     <ArrowRight size={16} />
-                  </a>
+                  </button>
 
                 </div>
 
                 {/* Wishlist */}
                 <button
                   type="button"
-                  className="absolute right-4 top-4 hidden h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm group-hover:flex"
+                  onClick={() =>
+                    handleWishlist(product)
+                  }
+                  disabled={wishlistIsLoading}
+                  className={`
+                    absolute
+                    right-4
+                    top-4
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-full
+                    shadow-sm
+                    transition-all
+                    ${
+                      productInWishlist
+                        ? "bg-[#00e603] text-white"
+                        : "bg-white text-gray-700"
+                    }
+                    ${
+                      wishlistIsLoading
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    }
+                  `}
+                  aria-label={
+                    productInWishlist
+                      ? "Remove from wishlist"
+                      : "Add to wishlist"
+                  }
                 >
-                  <Heart size={17} />
+                  <Heart
+                    size={17}
+                    fill={
+                      productInWishlist
+                        ? "currentColor"
+                        : "none"
+                    }
+                  />
                 </button>
 
               </div>
@@ -387,13 +709,16 @@ const HotSelling = () => {
       {/* Mobile Explore Link */}
       <div className="mt-8 flex justify-center sm:hidden">
 
-        <a
-          href={`/products/${products._id}`}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-[#76B900]"
+        <button
+          type="button"
+          onClick={() =>
+            navigate("/products")
+          }
+          className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-gray-900 hover:text-[#76B900]"
         >
           Explore All Products
           <ArrowRight size={18} />
-        </a>
+        </button>
 
       </div>
 

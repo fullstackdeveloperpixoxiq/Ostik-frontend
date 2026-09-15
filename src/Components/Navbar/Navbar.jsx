@@ -8,7 +8,6 @@ import {
   Heart,
   UserRound,
   ShoppingCart,
-  Mic,
   Search,
   MessageCircle,
 } from "lucide-react";
@@ -46,8 +45,17 @@ const Navbar = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  //cart count
+  const [cartCount, setCartCount]= useState(0);
+
   // Reference for desktop Products menu
   const productsMenuRef = useRef(null);
+
+  // =========================================================
+  // SCROLL REFS
+  // =========================================================
+
+  const lastScrollYRef = useRef(0);
 
   // =========================================================
   // FETCH CATEGORIES
@@ -246,6 +254,49 @@ const Navbar = () => {
     };
   }, []);
 
+
+  //cart count functionalities
+  useEffect(() => {
+  const fetchCartCount = async () => {
+    const token = localStorage.getItem("token");
+
+    // User not logged in
+    if (!token) {
+      setCartCount(0);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/cart`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const items = response.data.cart?.items || [];
+
+      // Total quantity of all cart items
+      const totalQuantity = items.reduce(
+        (total, item) => total + Number(item.quantity || 0),
+        0
+      );
+
+      setCartCount(totalQuantity);
+    } catch (error) {
+      console.log("Error fetching cart count:", error);
+
+      if (error.response?.status === 401) {
+        setCartCount(0);
+      }
+    }
+  };
+
+  fetchCartCount();
+}, []);
+
   // =========================================================
   // CLICK OUTSIDE SEARCH
   // =========================================================
@@ -281,41 +332,56 @@ const Navbar = () => {
   // =========================================================
   // DESKTOP NAVBAR SCROLL BEHAVIOR
   // =========================================================
+  //
+  // Links will:
+  //
+  // 0px - 80px    -> SHOW
+  // 80px - 120px  -> KEEP CURRENT STATE
+  // 120px+        -> HIDE
+  //
+  // This prevents the links from jumping back immediately
+  // when the user starts scrolling upward.
+  // =========================================================
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
+    lastScrollYRef.current = window.scrollY;
+
+    const SHOW_LINKS_AT = 80;
+    const HIDE_LINKS_AT = 120;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Always show navigation at top
-      if (currentScrollY <= 20) {
-        setShowLinks(true);
-        lastScrollY = currentScrollY;
+      // Always show links when user reaches the top area
+      if (currentScrollY <= SHOW_LINKS_AT) {
+        if (!showLinks) {
+          setShowLinks(true);
+        }
+
+        lastScrollYRef.current = currentScrollY;
         return;
       }
 
-      const difference = currentScrollY - lastScrollY;
+      // Hide links only after passing the hide threshold
+      if (currentScrollY >= HIDE_LINKS_AT) {
+        if (showLinks) {
+          setShowLinks(false);
 
-      // Ignore small movements
-      if (Math.abs(difference) < 6) {
+          setProductsOpen(false);
+          setExpandedCategory(null);
+          setSearchOpen(false);
+        }
+
+        lastScrollYRef.current = currentScrollY;
         return;
       }
 
-      // Scrolling down
-      if (difference > 0) {
-        setShowLinks(false);
-        setProductsOpen(false);
-        setExpandedCategory(null);
-        setSearchOpen(false);
-      }
-
-      // Scrolling up
-      else {
-        setShowLinks(true);
-      }
-
-      lastScrollY = currentScrollY;
+      // Between 80px and 120px:
+      // Do nothing.
+      //
+      // This is the important part that prevents
+      // the navbar links from jumping/flickering.
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, {
@@ -325,7 +391,7 @@ const Navbar = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [showLinks]);
 
   // =========================================================
   // CLOSE MOBILE MENU WHEN DESKTOP PRODUCTS OPENS
@@ -734,7 +800,7 @@ const Navbar = () => {
                     justify-center
                   "
                 >
-                  2
+                  {cartCount}
                 </span>
 
               </button>
@@ -1118,7 +1184,7 @@ const Navbar = () => {
                   transition-colors
                   duration-300
                 "
-                onClick={()=>navigate("/contact")}
+                onClick={() => navigate("/contact")}
               >
                 Contact
               </a>
@@ -1391,7 +1457,7 @@ const Navbar = () => {
                   justify-center
                 "
               >
-                2
+                {cartCount}
               </span>
 
             </button>

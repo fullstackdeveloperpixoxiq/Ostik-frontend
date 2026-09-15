@@ -1,11 +1,24 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Heart, ShoppingBag } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const LimitedStock = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // =====================================
+  // WISHLIST STATE
+  // =====================================
+  const [wishlistProducts, setWishlistProducts] = useState([]);
+  const [wishlistLoadingId, setWishlistLoadingId] = useState(null);
+
+  const navigate = useNavigate();
+
+  // =====================================
+  // FETCH LIMITED STOCK PRODUCTS
+  // =====================================
   useEffect(() => {
     const fetchLimitedStock = async () => {
       try {
@@ -27,9 +40,146 @@ const LimitedStock = () => {
     fetchLimitedStock();
   }, []);
 
-  // --------------------------------
-  // Loading
-  // --------------------------------
+  // =====================================
+  // FETCH USER WISHLIST
+  // =====================================
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const products = response.data.wishlist?.products || [];
+
+        setWishlistProducts(
+          products
+            .map((product) =>
+              typeof product === "string"
+                ? product
+                : product?._id
+            )
+            .filter(Boolean)
+        );
+      } catch (error) {
+        console.log("Error fetching wishlist:", error);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  // =====================================
+  // CHECK PRODUCT IN WISHLIST
+  // =====================================
+  const isInWishlist = (productId) => {
+    return wishlistProducts.includes(productId);
+  };
+
+  // =====================================
+  // HANDLE WISHLIST
+  // =====================================
+  const handleWishlist = async (product) => {
+    const token = localStorage.getItem("token");
+
+    // User not logged in
+    if (!token) {
+      toast.error("Please login to add products to wishlist");
+      navigate("/login");
+      return;
+    }
+
+    const productId = product._id;
+
+    setWishlistLoadingId(productId);
+
+    try {
+      // =====================================
+      // REMOVE FROM WISHLIST
+      // =====================================
+      if (isInWishlist(productId)) {
+        const response = await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/wishlist/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) =>
+          prev.filter((id) => id !== productId)
+        );
+
+        toast.success(
+          response.data.message || "Removed from wishlist"
+        );
+      }
+
+      // =====================================
+      // ADD TO WISHLIST
+      // =====================================
+      else {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/wishlist`,
+          {
+            productId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setWishlistProducts((prev) => [
+          ...prev,
+          productId,
+        ]);
+
+        toast.success(
+          response.data.message || "Added to wishlist"
+        );
+      }
+    } catch (error) {
+      console.log("Wishlist error:", error);
+
+      // =====================================
+      // TOKEN EXPIRED / UNAUTHORIZED
+      // =====================================
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        setWishlistProducts([]);
+
+        toast.error("Session expired. Please login again");
+        navigate("/login");
+      } else {
+        toast.error(
+          error.response?.data?.message ||
+            "Something went wrong. Please try again"
+        );
+      }
+    } finally {
+      setWishlistLoadingId(null);
+    }
+  };
+
+  // =====================================
+  // LOADING
+  // =====================================
 
   if (loading) {
     return (
@@ -68,9 +218,9 @@ const LimitedStock = () => {
     );
   }
 
-  // --------------------------------
-  // No products
-  // --------------------------------
+  // =====================================
+  // NO PRODUCTS
+  // =====================================
 
   if (!products.length) {
     return null;
@@ -126,9 +276,13 @@ const LimitedStock = () => {
             product.images?.[0] ||
             "";
 
-          const stock = product.limitedStock || product.variant?.stock || 0;
+          const stock =
+            product.limitedStock ||
+            product.variant?.stock ||
+            0;
 
-          const price = product.variant?.price || 0;
+          const price =
+            product.variant?.price || 0;
 
           const discountPercent =
             product.variant?.discountPercent || 0;
@@ -136,6 +290,12 @@ const LimitedStock = () => {
           const finalPrice =
             price -
             (price * discountPercent) / 100;
+
+          const productInWishlist =
+            isInWishlist(product._id);
+
+          const wishlistIsLoading =
+            wishlistLoadingId === product._id;
 
           return (
             <div
@@ -158,16 +318,40 @@ const LimitedStock = () => {
                 )}
 
                 {/* Limited Stock Badge */}
+
                 <span className="absolute left-4 top-4 rounded-full bg-red-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
                   ONLY {stock} LEFT
                 </span>
 
                 {/* Wishlist */}
+
                 <button
                   type="button"
-                  className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition-all hover:bg-red-500 hover:text-white"
+                  onClick={() => handleWishlist(product)}
+                  disabled={wishlistIsLoading}
+                  className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all ${
+                    productInWishlist
+                      ? "bg-[#00ff03] text-white"
+                      : "bg-white text-gray-700 hover:bg-red-500 hover:text-white"
+                  } ${
+                    wishlistIsLoading
+                      ? "cursor-not-allowed opacity-70"
+                      : ""
+                  }`}
+                  aria-label={
+                    productInWishlist
+                      ? "Remove from wishlist"
+                      : "Add to wishlist"
+                  }
                 >
-                  <Heart size={17} />
+                  <Heart
+                    size={17}
+                    fill={
+                      productInWishlist
+                        ? "currentColor"
+                        : "none"
+                    }
+                  />
                 </button>
 
               </div>
@@ -179,11 +363,13 @@ const LimitedStock = () => {
               <div className="p-5">
 
                 {/* Product Name */}
+
                 <h3 className="line-clamp-2 min-h-[48px] font-semibold text-gray-900">
                   {product.name}
                 </h3>
 
                 {/* Variant */}
+
                 {product.variant?.name && (
                   <p className="mt-1 text-xs text-gray-500">
                     {product.variant.name}
@@ -191,6 +377,7 @@ const LimitedStock = () => {
                 )}
 
                 {/* Price */}
+
                 <div className="mt-3 flex flex-wrap items-center gap-2">
 
                   <span className="text-lg font-bold text-gray-900">
@@ -212,19 +399,24 @@ const LimitedStock = () => {
                 </div>
 
                 {/* Stock Warning */}
+
                 <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-red-500">
                   <span className="h-2 w-2 rounded-full bg-red-500" />
                   Hurry! Limited availability
                 </div>
 
                 {/* View Product */}
-                <a
-                  href={`/products/${product._id}`}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/product/${product._id}`)
+                  }
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-red-500"
                 >
                   <ShoppingBag size={16} />
                   View Product
-                </a>
+                </button>
 
               </div>
 
