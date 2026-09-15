@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, ArrowRight, Star } from "lucide-react";
+import { Heart, ArrowRight, Star, GiftIcon } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -367,6 +367,7 @@ const LatestProducts = () => {
                 {/* NEW BADGE */}
 
                 <span className="absolute left-4 top-4 rounded-full bg-[#00e603] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                  <GiftIcon color="red" size={15}/>
                   New
                 </span>
 

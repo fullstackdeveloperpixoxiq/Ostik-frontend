@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
@@ -23,11 +24,21 @@ const Category = () => {
     fetchCategories();
   }, []);
 
-  // Loading
+  // =========================================================
+  // ONLY MAIN CATEGORIES
+  // parentCategory === null
+  // =========================================================
+  const mainCategories = categories.filter(
+    (category) => !category.parentCategory
+  );
+
+  // =========================================================
+  // LOADING
+  // =========================================================
   if (loading) {
     return (
       <section className="mx-auto w-full max-w-7xl px-6 py-16">
-        <div className="mb-10 h-9 w-40 animate-pulse rounded " />
+        <div className="mb-10 h-9 w-40 animate-pulse rounded" />
 
         <div className="flex gap-5 overflow-hidden">
           {[1, 2, 3, 4, 5].map((item) => (
@@ -36,7 +47,8 @@ const Category = () => {
               className="min-w-[180px] flex-shrink-0 sm:min-w-[210px]"
             >
               <div className="aspect-square animate-pulse rounded-2xl" />
-              <div className="mx-auto mt-4 h-5 w-24 animate-pulse rounded " />
+
+              <div className="mx-auto mt-4 h-5 w-24 animate-pulse rounded" />
             </div>
           ))}
         </div>
@@ -44,22 +56,23 @@ const Category = () => {
     );
   }
 
-  // No categories
-  if (!categories.length) {
+  // =========================================================
+  // NO MAIN CATEGORIES
+  // =========================================================
+  if (!mainCategories.length) {
     return null;
   }
 
   return (
     <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
-
-      {/* Heading */}
+      {/* HEADER */}
       <div className="mb-10">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           Categories
         </h2>
       </div>
 
-      {/* Horizontal Scroll */}
+      {/* CATEGORY LIST */}
       <div
         className="flex gap-5 overflow-x-auto pb-4"
         style={{
@@ -67,14 +80,16 @@ const Category = () => {
           msOverflowStyle: "none",
         }}
       >
-        {categories.map((category) => (
-          <a
+        {mainCategories.map((category) => (
+          <Link
             key={category._id}
-            href={`/products?category=${category.slug}`}
+            to={`/products?category=${encodeURIComponent(
+              category.slug
+            )}`}
             className="group w-[180px] flex-shrink-0 sm:w-[210px] lg:w-[230px]"
           >
-            {/* Image */}
-            <div className="aspect-square overflow-hidden rounded-2xl ">
+            {/* IMAGE */}
+            <div className="aspect-square overflow-hidden rounded-2xl">
               <img
                 src={category.image}
                 alt={category.name}
@@ -82,11 +97,11 @@ const Category = () => {
               />
             </div>
 
-            {/* Category Name */}
+            {/* NAME */}
             <h3 className="mt-4 text-center text-base font-semibold text-gray-900 transition-colors duration-200 group-hover:text-[#00e603] sm:text-lg">
               {category.name}
             </h3>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
