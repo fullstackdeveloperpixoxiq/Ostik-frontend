@@ -30,7 +30,7 @@ const Footer = () => {
 
       <section className="border-y border-gray-200 bg-[#f7faf3]">
 
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 sm:gap-6 sm:px-8 sm:py-10 lg:flex-row lg:items-center lg:justify-between lg:px-10">
 
           {/* Newsletter text */}
 
@@ -40,7 +40,7 @@ const Footer = () => {
               Stay Connected
             </p>
 
-            <h2 className="text-2xl font-bold text-[#171a1a] sm:text-3xl">
+            <h2 className="text-xl font-bold text-[#171a1a] sm:text-3xl">
               Get the latest from OSTIK
             </h2>
 
@@ -78,7 +78,7 @@ const Footer = () => {
 
       {/* ================= MAIN FOOTER ================= */}
 
-      <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8 sm:py-14 lg:px-10">
 
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -92,7 +92,7 @@ const Footer = () => {
             <div className="mb-5">
 
               <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-              className="w-[150px] h-auto object-contain"/>
+              className="w-[130px] h-auto object-contain sm:w-[150px]"/>
 
             </div>
 
@@ -416,10 +416,10 @@ const Footer = () => {
       <button
         onClick={scrollToTop}
         aria-label="Back to top"
-        className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-[#00ff03] text-white shadow-lg transition hover:bg-[#649f00]"
+        className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#00ff03] text-white shadow-lg transition hover:bg-[#649f00] sm:bottom-6 sm:right-6 sm:h-11 sm:w-11"
       >
 
-        <ArrowUp size={19} />
+        <ArrowUp size={18} />
 
       </button>
 

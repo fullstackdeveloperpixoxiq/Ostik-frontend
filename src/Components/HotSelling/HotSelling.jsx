@@ -289,13 +289,13 @@ const HotSelling = () => {
 
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-8 sm:py-16 lg:px-10">
         <div className="mb-10">
           <p className="mb-2 text-sm font-medium uppercase tracking-wider text-[#76B900]">
             Trending now
           </p>
 
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             🔥 Hot Selling
           </h2>
 
@@ -328,7 +328,7 @@ const HotSelling = () => {
     <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
 
       {/* Header */}
-      <div className="mb-10 flex items-end justify-between gap-4">
+      <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
 
         <div>
           <p className="mb-2 text-sm font-medium uppercase tracking-wider text-[#00e603]">
@@ -386,7 +386,7 @@ const HotSelling = () => {
               <div className="group relative overflow-hidden rounded-3xl bg-gray-50">
 
                 {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[4/3]">
 
                   {image && (
                     <img
@@ -456,7 +456,7 @@ const HotSelling = () => {
                 </div>
 
                 {/* Product Info */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
 
                   {/* Rating */}
                   <div className="mb-2 flex items-center gap-1 text-sm">
@@ -478,7 +478,7 @@ const HotSelling = () => {
 
                   {/* Product Name */}
                   <h3
-                    className="cursor-pointer text-xl font-semibold text-gray-900 transition-colors hover:text-[#76B900]"
+                    className="cursor-pointer text-lg font-semibold text-gray-900 transition-colors hover:text-[#76B900] sm:text-xl"
                     onClick={() =>
                       navigate(
                         `/product/${product._id}`
@@ -519,7 +519,7 @@ const HotSelling = () => {
                         `/product/${product._id}`
                       )
                     }
-                    className="mt-5 block w-full cursor-pointer rounded-full bg-gray-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#00ff03]"
+                    className="mt-4 block w-full cursor-pointer rounded-full bg-gray-900 px-5 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[#00ff03] sm:mt-5 sm:py-3"
                   >
                     View Product
                   </button>
@@ -554,7 +554,7 @@ const HotSelling = () => {
             return (
               <div
                 key={product._id}
-                className="group relative flex overflow-hidden rounded-3xl bg-gray-50"
+                className="group relative flex min-h-[180px] overflow-hidden rounded-3xl bg-gray-50 sm:min-h-[200px]"
               >
 
                 {/* Image */}
@@ -583,7 +583,7 @@ const HotSelling = () => {
                 </div>
 
                 {/* Product Info */}
-                <div className="flex flex-1 flex-col justify-center p-5">
+                <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
 
                   {/* Rating */}
                   <div className="mb-2 flex items-center gap-1 text-xs">

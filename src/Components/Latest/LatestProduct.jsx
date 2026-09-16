@@ -251,7 +251,7 @@ const LatestProducts = () => {
   // =====================================
   if (loading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-8 sm:py-16 lg:px-10">
         <div className="mb-10 text-center">
           <div className="mx-auto mb-3 h-4 w-32 animate-pulse rounded bg-gray-200" />
 
@@ -260,7 +260,7 @@ const LatestProducts = () => {
           <div className="mx-auto mt-3 h-5 w-80 animate-pulse rounded bg-gray-200" />
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
@@ -293,18 +293,18 @@ const LatestProducts = () => {
   // MAIN UI
   // =====================================
   return (
-    <section className="mx-auto w-full max-w-7xl px-6 py-16 sm:px-8 lg:px-10">
+    <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-8 sm:py-16 lg:px-10">
       {/* ============================= */}
       {/* HEADER */}
       {/* ============================= */}
 
-      <div className="mb-10 flex items-end justify-between gap-4">
+      <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
         <div>
           <p className="mb-2 text-sm font-medium uppercase tracking-wider text-[#00e603]">
             Fresh arrivals
           </p>
 
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Latest Products
           </h2>
 
@@ -327,7 +327,7 @@ const LatestProducts = () => {
       {/* PRODUCT GRID */}
       {/* ============================= */}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {products.map((product) => {
           const variant = getDisplayVariant(product);
 
@@ -366,7 +366,7 @@ const LatestProducts = () => {
 
                 {/* NEW BADGE */}
 
-                <span className="absolute left-4 top-4 rounded-full bg-[#00e603] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                <span className="absolute left-2 top-2 rounded-full bg-[#00e603] px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[10px]">
                   <GiftIcon color="red" size={15}/>
                   New
                 </span>
@@ -377,7 +377,7 @@ const LatestProducts = () => {
                   type="button"
                   onClick={() => handleWishlist(product)}
                   disabled={wishlistIsLoading}
-                  className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all ${
+                  className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all sm:right-4 sm:top-4 sm:h-9 sm:w-9 ${
                     productInWishlist
                       ? "bg-[#00ff03] text-white"
                       : "bg-white text-gray-700 hover:bg-[#00ff03] hover:text-white"
@@ -393,7 +393,7 @@ const LatestProducts = () => {
                   }
                 >
                   <Heart
-                    size={17}
+                    size={15}
                     fill={
                       productInWishlist
                         ? "currentColor"
@@ -407,7 +407,7 @@ const LatestProducts = () => {
               {/* PRODUCT INFO */}
               {/* ============================= */}
 
-              <div className="p-5">
+              <div className="p-3 sm:p-5">
                 {/* Rating */}
 
                 <div className="mb-2 flex items-center gap-1 text-xs">
@@ -428,7 +428,7 @@ const LatestProducts = () => {
 
                 {/* Product Name */}
 
-                <h3 className="min-h-[48px] font-semibold leading-6 text-gray-900">
+                <h3 className="min-h-[42px] text-sm font-semibold leading-5 text-gray-900 sm:min-h-[48px] sm:text-base sm:leading-6">
                   {product.name}
                 </h3>
 
@@ -436,7 +436,7 @@ const LatestProducts = () => {
 
                 {variant ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <span className="text-base font-bold text-gray-900">
+                    <span className="text-sm font-bold text-gray-900 sm:text-base">
                       From ₹
                       {finalPrice.toLocaleString("en-IN")}
                     </span>
@@ -463,7 +463,7 @@ const LatestProducts = () => {
 
                 <a
                   href={`/product/${product._id}`}
-                  className="mt-5 flex w-fit items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#00ff03]"
+                  className="mt-4 flex w-fit items-center gap-1.5 text-xs font-semibold sm:mt-5 sm:gap-2 sm:text-sm text-gray-900 transition-colors hover:text-[#00ff03]"
                 >
                   View Product
                   <ArrowRight size={16} />

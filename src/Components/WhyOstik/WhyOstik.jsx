@@ -40,17 +40,17 @@ const WhyOstik = () => {
   ];
 
   return (
-    <section className="w-full bg-white py-20 md:py-28">
-      <div className="mx-auto w-[90%] max-w-[1200px]">
+    <section className="w-full bg-white py-14 sm:py-20 md:py-28">
+      <div className="mx-auto w-[92%] max-w-[1200px]">
 
         {/* Header */}
-        <div className="mb-12 max-w-[720px] md:mb-16">
+        <div className="mb-8 max-w-[720px] sm:mb-12 md:mb-16">
 
           <span className="mb-4 inline-block text-xs font-semibold tracking-[2.5px] text-[#00ff03]">
             WHY OSTIK
           </span>
 
-          <h2 className="text-[40px] font-semibold leading-[1.05] tracking-[-2px] text-[#111] sm:text-[48px] md:text-[60px]">
+          <h2 className="text-[30px] font-semibold leading-[1.1] tracking-[-1.5px] text-[#111] sm:text-[48px] md:text-[60px]">
             More than gadgets.
             <span className="block text-[#00ff03]">
               A better way to shop.
@@ -72,14 +72,14 @@ const WhyOstik = () => {
             return (
               <div
                 key={feature.number}
-                className="group relative min-h-[250px] overflow-hidden rounded-[22px] border border-[#e9e9e9] bg-white p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00e603] hover:shadow-[0_18px_45px_rgba(0,0,0,0.07)] md:min-h-[270px] md:p-8"
+                className="group relative min-h-[230px] overflow-hidden rounded-[22px] border border-[#e9e9e9] bg-white p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#00e603] hover:shadow-[0_18px_45px_rgba(0,0,0,0.07)] sm:min-h-[250px] sm:p-7 md:min-h-[270px] md:p-8"
               >
 
                 {/* Background Circle */}
                 <div className="absolute -bottom-[75px] -right-[75px] h-[170px] w-[170px] rounded-full bg-[#1c8c5a]/5 transition-transform duration-500 group-hover:scale-[1.35]" />
 
                 {/* Top */}
-                <div className="relative z-10 mb-10 flex items-center justify-between md:mb-12">
+                <div className="relative z-10 mb-7 flex items-center justify-between sm:mb-10 md:mb-12">
 
                   <span className="text-[13px] font-semibold tracking-wider text-[#aaa]">
                     {feature.number}
@@ -93,7 +93,7 @@ const WhyOstik = () => {
 
                 {/* Content */}
                 <div className="relative z-10">
-                  <h3 className="mb-3 text-[21px] font-semibold tracking-[-0.5px] text-[#151515] md:text-[23px]">
+                  <h3 className="mb-3 text-[19px] font-semibold tracking-[-0.3px] text-[#151515] sm:text[21px] md:text-[23px]">
                     {feature.title}
                   </h3>
 
@@ -114,7 +114,7 @@ const WhyOstik = () => {
         </div>
 
         {/* Bottom Brand Statement */}
-        <div className="mt-14 flex items-center justify-between border-t border-[#eeeeee] pt-7 md:mt-16">
+        <div className="mt-10 flex flex-col items-start gap-3 border-t border-[#eeeeee] pt-6 sm:mt-14 sm:flex-row sm:items-center sm:justify-between sm:gap-0 md:mt-16">
 
           <span className="text-[13px] font-bold tracking-[3px] text-[#1c8c5a]">
             OSTIK
