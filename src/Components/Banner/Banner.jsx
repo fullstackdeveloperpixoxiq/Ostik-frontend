@@ -90,13 +90,13 @@ const SuperBanner = () => {
                 </p>
               )}
 
-              <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className="text-2xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 {banner.title}
               </h1>
 
               <a
                 href={banner.buttonLink || "/products"}
-                className="mt-7 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#00e603]"
+                className="mt-5 sm:mt-7 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition hover:bg-[#00e603]"
               >
                 {banner.buttonText || "Shop Now"}
 

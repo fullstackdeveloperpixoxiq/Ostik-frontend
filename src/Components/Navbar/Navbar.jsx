@@ -671,7 +671,8 @@ const Navbar = () => {
               src="/OstikLogo/OSTIK_PNG.png"
               alt="OSTIK"
               className="
-                w-[150px]
+                w-[130px]
+                sm:w-[140px]
                 h-auto
                 object-contain
                 drop-shadow-[0_8px_8px_rgba(0,0,0,0.18)]
@@ -1303,7 +1304,7 @@ const Navbar = () => {
         <div
           className="
             h-[78px]
-            px-5
+            px-4
             flex
             items-center
             justify-between
@@ -1363,7 +1364,7 @@ const Navbar = () => {
               type="button"
               className="
                 hidden
-                sm:flex
+                lg:flex
                 items-center
                 gap-1
                 text-sm
@@ -1470,7 +1471,7 @@ const Navbar = () => {
             MOBILE SEARCH
         ====================================================== */}
 
-        <div className="px-5 pb-4">
+        <div className="px-4 pb-3">
 
           <div
             data-search-container
@@ -1484,7 +1485,7 @@ const Navbar = () => {
 
             <div
               className="
-                h-[58px]
+                h-[50px]
                 w-full
                 flex
                 items-center
@@ -1517,9 +1518,9 @@ const Navbar = () => {
                   flex-1
                   min-w-0
                   h-full
-                  px-5
+                  px-4
                   outline-none
-                  text-[16px]
+                  text-[15px]
                   placeholder:text-gray-400
                 "
               />

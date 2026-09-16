@@ -22,19 +22,16 @@ function PromoCarousel() {
           className="promo-carousel__track flex w-max items-center whitespace-nowrap"
           style={{ animation: "ostik-marquee 25s linear infinite" }}
         >
-          <div className="flex items-center gap-14 pr-14 text-lg font-bold tracking-wide">
+          <div className="flex items-center gap-8 sm:gap-14 pr-8 sm:pr-14 text-sm sm:text-lg font-bold tracking-wide">
             <span>Free shipping on orders above ₹999</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
-            <span>2-Year Direct Warranty</span>
-            <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
+            className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Secure Payments</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
+            className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Fast Delivery Across India</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
+            className="w-[38px] sm:w-[50px] h-auto object-contain"/>
           </div>
 
           <div
@@ -43,13 +40,10 @@ function PromoCarousel() {
           >
             <span>Free shipping on orders above ₹999</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
-            <span>2-Year Direct Warranty</span>
-            <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
+            className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Secure Payments</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-            className="w-[50px] h-auto object-contain"/>
+            className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Fast Delivery Across India</span>
           </div>
         </div>
