@@ -83,7 +83,7 @@ const VideoSection = () => {
             <div className="absolute -bottom-3 -left-3 h-16 w-16 rounded-2xl bg-[#EAF6D8] sm:-bottom-7 sm:-left-7 sm:h-32 sm:w-32" />
 
             {/* Video wrapper */}
-            <div className="relative z-10 aspect-[16/10] w-full overflow-hidden rounded-[22px] bg-black shadow-[0_25px_70px_rgba(0,0,0,0.12)] sm:rounded-[28px]">
+            <div className="relative z-10 aspect-[16/10] w-full overflow-hidden bg-black shadow-[0_25px_70px_rgba(0,0,0,0.12)]">
 
               {isYouTube ? (
                 <iframe

@@ -496,7 +496,7 @@ const ProductDetail = () => {
 
           <div className="mb-8 h-5 w-64 rounded bg-gray-200" />
 
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
 
             <div>
               <div className="h-[500px] rounded-2xl bg-gray-200" />
@@ -572,7 +572,7 @@ const ProductDetail = () => {
             BREADCRUMB
         ====================================================== */}
 
-        <div className="mx-auto max-w-7xl px-4 pb-4 pt-6 sm:px-6 lg:px-10">
+        <div className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 sm:pb-14 lg:px-10">
 
           <div className="flex flex-wrap items-center gap-1.5 text-sm text-gray-500">
 
@@ -613,9 +613,9 @@ const ProductDetail = () => {
             PRODUCT MAIN SECTION
         ====================================================== */}
 
-        <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-10">
+        <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 sm:pb-14 lg:px-10">
 
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
+          <div className="grid gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-14">
 
             {/* =================================================
                 LEFT - IMAGE GALLERY
@@ -630,23 +630,23 @@ const ProductDetail = () => {
                     <img
                       src={currentImages[selectedImage]}
                       alt={product.name}
-                      className="h-[420px] w-full object-contain p-8 sm:h-[500px] sm:p-12"
+                      className="h-[320px] w-full object-contain p-5 sm:h-[500px] sm:p-12"
                     />
 
                     {currentImages.length > 1 && (
                       <>
                         <button
                           onClick={previousImage}
-                          className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-[#00ff03]"
+                          className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-[#00ff03] sm:left-4 sm:h-10 sm:w-10"
                         >
                           <ArrowLeft className="h-5 w-5" />
                         </button>
 
                         <button
                           onClick={nextImage}
-                          className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-[#00ff03]"
+                          className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-[#00ff03] sm:right-4 sm:h-10 sm:w-10"
                         >
-                          <ArrowRight className="h-5 w-5" />
+                          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                       </>
                     )}
@@ -666,7 +666,7 @@ const ProductDetail = () => {
               {/* THUMBNAILS */}
 
               {currentImages.length > 1 && (
-                <div className="mt-5 flex gap-3 overflow-x-auto pb-2">
+                <div className="mt-4 flex gap-2 overflow-x-auto pb-2 sm:mt-5 sm:gap-3">
 
                   {currentImages.map((image, index) => (
                     <button
@@ -674,7 +674,7 @@ const ProductDetail = () => {
                       onClick={() =>
                         setSelectedImage(index)
                       }
-                      className={`h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 bg-gray-50 transition ${
+                      className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 bg-gray-50 transition sm:h-20 sm:w-20 sm:rounded-xl ${
                         selectedImage === index
                           ? "border-[#00ff03]"
                           : "border-gray-200 hover:border-gray-400"
@@ -707,7 +707,7 @@ const ProductDetail = () => {
 
               {/* RATING */}
 
-              <div className="mt-4 flex flex-wrap items-center gap-3">
+              <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
 
                 <div className="flex items-center gap-1">
 
@@ -755,15 +755,15 @@ const ProductDetail = () => {
               {selectedVariant && (
                 <div>
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
 
-                    <span className="text-3xl font-bold text-gray-950">
+                    <span className="text-2xl font-bold text-gray-950 sm:text-3xl">
                       ₹{roundedFinalPrice.toLocaleString("en-IN")}
                     </span>
 
                     {discountPercent > 0 && (
                       <>
-                        <span className="text-lg text-gray-400 line-through">
+                        <span className="text-base text-gray-400 line-through sm:text-lg">
                           ₹{currentPrice.toLocaleString("en-IN")}
                         </span>
 
@@ -787,7 +787,7 @@ const ProductDetail = () => {
               ================================================== */}
 
               {variants.length > 0 && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
 
                   <div className="mb-3 flex items-center justify-between">
 
@@ -821,7 +821,7 @@ const ProductDetail = () => {
                           onClick={() =>
                             handleVariantChange(variant)
                           }
-                          className={`relative rounded-lg border px-5 py-3 text-sm font-semibold transition ${
+                          className={`relative rounded-lg border px-4 py-2.5 text-xs font-semibold transition sm:px-5 sm:py-3 sm:text-sm ${
                             isSelected
                               ? "border-[#00ff03] bg-[#00ff03]/10 text-black"
                               : "border-gray-300 bg-white text-gray-700 hover:border-gray-500"
@@ -850,7 +850,7 @@ const ProductDetail = () => {
               {/* SKU */}
 
               {selectedVariant?.sku && (
-                <div className="mt-5 text-sm text-gray-500">
+                <div className="mt-4 text-xs text-gray-500 sm:mt-5 sm:text-sm">
                   SKU:
                   <span className="ml-2 font-medium text-gray-800">
                     {selectedVariant.sku}
@@ -861,10 +861,10 @@ const ProductDetail = () => {
               {/* STOCK */}
 
               {selectedVariant && (
-                <div className="mt-4">
+                <div className="mt-3 sm:mt-4">
 
                   {currentStock > 0 ? (
-                    <div className="flex items-center gap-2 text-sm font-semibold text-green-700">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-green-700 sm:text-sm">
                       <Check className="h-4 w-4" />
                       {currentStock <= 5
                         ? `Only ${currentStock} left in stock`
@@ -882,7 +882,7 @@ const ProductDetail = () => {
               {/* QUANTITY */}
 
               {selectedVariant && !isOutOfStock && (
-                <div className="mt-7">
+                <div className="mt-6 sm:mt-7">
 
                   <p className="mb-3 text-sm font-bold">
                     Quantity
@@ -923,7 +923,7 @@ const ProductDetail = () => {
 
               {/* ACTION BUTTONS */}
 
-              <div className="mt-7 flex items-center gap-3">
+              <div className="mt-6 flex items-center gap-2 sm:mt-7 sm:gap-3">
 
                 {/* ADD TO CART */}
 
@@ -934,9 +934,9 @@ const ProductDetail = () => {
                     isOutOfStock
                   }
                   onClick={handleAddToCart}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-black bg-white px-5 text-sm font-bold text-black transition hover:border-[#00ff03] hover:bg-[#00ff03] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-black bg-white px-3 text-xs font-bold text-black transition hover:border-[#00ff03] hover:bg-[#00ff03] disabled:cursor-not-allowed disabled:opacity-40 sm:h-12 sm:gap-2 sm:px-5 sm:text-sm"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
 
                   {cartLoading
                     ? "Adding..."
@@ -951,7 +951,7 @@ const ProductDetail = () => {
                     isOutOfStock
                   }
                   onClick={handleBuyNow}
-                  className="flex h-12 flex-1 items-center justify-center rounded-xl bg-black px-5 text-sm font-bold text-white transition hover:bg-[#00ff03] hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-11 flex-1 items-center justify-center rounded-xl bg-black px-3 text-xs font-bold text-white transition hover:bg-[#00ff03] hover:text-black disabled:cursor-not-allowed disabled:opacity-40 sm:h-12 sm:px-5 sm:text-sm"
                 >
                   Buy Now
                 </button>
@@ -972,10 +972,10 @@ const ProductDetail = () => {
                       ? "Remove from wishlist"
                       : "Add to wishlist"
                   }
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:border-[#00ff03] hover:bg-[#00ff03]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:border-[#00ff03] hover:bg-[#00ff03]/10 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-12"
                 >
                   <Heart
-                    className={`h-6 w-6 transition-all duration-200 ${
+                    className={`h-5 w-5 sm:h-6 sm:w-6 transition-all duration-200 ${
                       isWishlisted
                         ? "fill-[#00ff03] text-[#00ff03]"
                         : "text-gray-700"
@@ -987,7 +987,7 @@ const ProductDetail = () => {
 
               {/* SERVICE FEATURES */}
 
-              <div className="mt-8 grid gap-4 border-t border-gray-200 pt-7 sm:grid-cols-3">
+              <div className="mt-7 grid gap-3 border-t border-gray-200 pt-6 sm:mt-8 sm:gap-4 sm:pt-7 sm:grid-cols-3">
 
                 <div className="flex items-start gap-3">
                   <Truck className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#00ff03]" />
@@ -1037,9 +1037,9 @@ const ProductDetail = () => {
 
         <section className="border-y border-gray-200 bg-gray-50">
 
-          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-10">
+          <div className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 sm:pb-14 lg:px-10">
 
-            <div className="grid gap-12 lg:grid-cols-2">
+            <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
 
               {/* DESCRIPTION */}
 
@@ -1071,7 +1071,7 @@ const ProductDetail = () => {
                       ([key, value], index) => (
                         <div
                           key={key}
-                          className={`grid grid-cols-2 gap-4 px-5 py-4 text-sm ${
+                          className={`grid grid-cols-1 gap-1 px-4 py-3 text-sm sm:grid-cols-2 sm:gap-4 sm:px-5 sm:py-4 ${
                             index !==
                             Object.keys(product.specs).length - 1
                               ? "border-b border-gray-200"
@@ -1117,7 +1117,7 @@ const ProductDetail = () => {
 
         <section
           id="reviews"
-          className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-10"
+          className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-10"
         >
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -1201,12 +1201,12 @@ const ProductDetail = () => {
 
                 <div
                   key={review._id}
-                  className="rounded-2xl border border-gray-200 bg-white p-5"
+                  className="rounded-xl border border-gray-200 bg-white p-4 sm:rounded-2xl sm:p-5"
                 >
 
                   {/* USER */}
 
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                     <div className="flex items-center gap-3">
 
@@ -1278,7 +1278,7 @@ const ProductDetail = () => {
                               key={`${image}-${index}`}
                               src={image}
                               alt="Customer review"
-                              className="h-24 w-24 flex-shrink-0 rounded-lg border border-gray-200 object-cover"
+                              className="h-20 w-20 flex-shrink-0 rounded-lg border border-gray-200 object-cover sm:h-24 sm:w-24"
                             />
                           )
                         )}

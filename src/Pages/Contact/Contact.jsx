@@ -112,8 +112,7 @@ const Contact = () => {
       );
 
       toast.error(
-        err.message ||
-          "Unable to send your message"
+        err.response?.data?.message
       );
 
     } finally {
@@ -136,10 +135,10 @@ const Contact = () => {
 
       <section className="border-b border-gray-200 bg-gray-50">
 
-        <div className="mx-auto max-w-7xl px-4 py-14 text-center sm:px-6 lg:px-10 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 py-10 text-center sm:px-6 sm:py-14 lg:px-10 lg:py-20">
 
 
-          <h1 className="mt-5 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:mt-5 sm:text-4xl">
 
             Get in Touch
 
@@ -163,9 +162,9 @@ const Contact = () => {
           CONTACT CONTENT
       ====================================================== */}
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
 
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
 
 
           {/* =================================================
@@ -200,7 +199,7 @@ const Contact = () => {
 
             {/* CONTACT DETAILS */}
 
-            <div className="mt-8 space-y-6">
+            <div className="mt-7 space-y-5 sm:mt-8 sm:space-y-6">
 
 
               {/* EMAIL */}
@@ -320,9 +319,9 @@ const Contact = () => {
               RIGHT SIDE - FORM
           ================================================== */}
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7 lg:p-8">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-7 lg:p-8">
 
-            <div className="mb-7">
+            <div className="mb-6 sm:mb-7">
 
               <h2 className="text-xl font-bold">
                 Send us a message

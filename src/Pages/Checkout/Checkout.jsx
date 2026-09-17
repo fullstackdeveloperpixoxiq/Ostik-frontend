@@ -632,7 +632,7 @@ const Checkout = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="h-20 flex items-center justify-between">
+          <div className="h-16 sm:h-20 flex items-center justify-between">
 
             <button
               onClick={() => navigate("/cart")}
@@ -648,10 +648,10 @@ const Checkout = () => {
             </button>
 
 
-            <div className="shrink-0 px-10 flex items-center justify-center">
+            <div className="shrink-0 px-2 sm:px-6 flex items-center justify-center">
 
               <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-              className="w-[150px] h-auto object-contain"/>
+              className="w-[150px] h-auto object-contain sm:w-[150px]"/>
 
             </div>
 
@@ -677,7 +677,7 @@ const Checkout = () => {
       {/* CHECKOUT CONTENT */}
       {/* ---------------------------------- */}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 lg:py-12">
 
         {/* TITLE */}
 
@@ -687,11 +687,11 @@ const Checkout = () => {
             OSTIK CHECKOUT
           </p>
 
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">
             Complete your order
           </h1>
 
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-sm sm:text-base text-gray-500">
             Enter your delivery details and choose your payment method.
           </p>
 
@@ -718,7 +718,7 @@ const Checkout = () => {
 
             <section className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-7">
 
-              <div className="flex items-start gap-3 mb-6">
+              <div className="flex items-start gap-3 mb-5 sm:mb-6">
 
                 <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
 
@@ -762,7 +762,7 @@ const Checkout = () => {
                     value={shippingAddress.fullName}
                     onChange={handleAddressChange}
                     placeholder="Enter your full name"
-                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-green focus:ring-1 focus:ring-black transition"
+                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
@@ -783,7 +783,7 @@ const Checkout = () => {
                     onChange={handleAddressChange}
                     placeholder="10-digit mobile number"
                     maxLength={10}
-                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-black focus:ring-1 focus:ring-black transition"
+                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
@@ -804,7 +804,7 @@ const Checkout = () => {
                     onChange={handleAddressChange}
                     placeholder="6-digit pincode"
                     maxLength={6}
-                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-black focus:ring-1 focus:ring-black transition"
+                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
@@ -844,7 +844,7 @@ const Checkout = () => {
                     value={shippingAddress.city}
                     onChange={handleAddressChange}
                     placeholder="City"
-                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-black focus:ring-1 focus:ring-black transition"
+                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
@@ -864,7 +864,7 @@ const Checkout = () => {
                     value={shippingAddress.state}
                     onChange={handleAddressChange}
                     placeholder="State"
-                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-black focus:ring-1 focus:ring-black transition"
+                    className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
@@ -878,9 +878,9 @@ const Checkout = () => {
             {/* PAYMENT METHOD */}
             {/* ------------------------------ */}
 
-            <section className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-7">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-7">
 
-              <div className="flex items-start gap-3 mb-6">
+              <div className="flex items-start gap-3 mb-5 sm:mb-6">
 
                 <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
 
@@ -940,7 +940,7 @@ const Checkout = () => {
 
                     <div className="flex-1">
 
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
 
                         <div>
 
@@ -1100,7 +1100,7 @@ const Checkout = () => {
           <div className="lg:col-span-5">
 
 
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden lg:sticky lg:top-6">
+            <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden lg:sticky lg:top-6">
 
 
               {/* ORDER SUMMARY HEADER */}

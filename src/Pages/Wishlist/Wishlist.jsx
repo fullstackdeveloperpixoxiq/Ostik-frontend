@@ -135,12 +135,12 @@ const Wishlist = () => {
 
       {/* PAGE HEADER */}
       <section className="border-b border-gray-100 bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
+        <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 sm:h-12 sm:w-12">
               <Heart
-                size={24}
-                className="fill-[#00ff03] text-[#00e603]"
+                size={20}
+                className="sm:h-6 sm:w-6 fill-[#00ff03] text-[#00e603]"
               />
             </div>
 
@@ -159,7 +159,7 @@ const Wishlist = () => {
       </section>
 
       {/* WISHLIST CONTENT */}
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {/* TOP BAR */}
         <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
@@ -227,7 +227,7 @@ const Wishlist = () => {
           </div>
         ) : (
           /* PRODUCTS */
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {wishlistProducts.map((product) => {
               const finalPrice = calculatePrice(
                 product.variant.price,
@@ -249,7 +249,7 @@ const Wishlist = () => {
 
                     {/* DISCOUNT */}
                     {product.discountPercent > 0 && (
-                      <span className="absolute left-4 top-4 rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+                      <span className="absolute left-2 top-2 rounded-full bg-green-600 px-2 py-1 text-[9px] font-semibold text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs">
                         {product.discountPercent}% OFF
                       </span>
                     )}
@@ -264,29 +264,29 @@ const Wishlist = () => {
                         removingProductId === product._id
                       }
                       aria-label="Remove from wishlist"
-                      className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition hover:scale-105 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md transition hover:scale-105 hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-60 sm:right-4 sm:top-4 sm:h-10 sm:w-10"
                     >
                       <Heart
-                        size={19}
-                        className="fill-[#00ff03] text-[#00ff03]"
+                        size={16}
+                        className="fill-[#00ff03] text-[#00ff03] sm:h-[19px] sm:w-[19px]"
                       />
                     </button>
                   </div>
 
                   {/* DETAILS */}
-                  <div className="p-5">
-                    <h3 className="line-clamp-2 min-h-[48px] text-base font-semibold leading-6 text-gray-900">
+                  <div className="p-3 sm:p-5">
+                    <h3 className="line-clamp-2 min-h-[42px] text-sm font-semibold leading-5 text-gray-900 sm:min-h-[48px] sm:text-base sm:leading-6">
                       {product.name}
                     </h3>
 
                     {/* PRICE */}
-                    <div className="mt-4 flex items-center gap-3">
-                      <span className="text-xl font-bold text-gray-900">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
+                      <span className="text-sm font-bold text-gray-900 sm:text-xl">
                         ₹{finalPrice.toLocaleString("en-IN")}
                       </span>
 
                       {product.discountPercent > 0 && (
-                        <span className="text-sm text-gray-400 line-through">
+                        <span className="text-[11px] text-gray-400 line-through sm:text-sm">
                           ₹
                           {product.basePrice.toLocaleString(
                             "en-IN"
@@ -296,33 +296,33 @@ const Wishlist = () => {
                     </div>
 
                     {/* STOCK */}
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       {product.variant.stock > 0 ? (
-                        <span className="text-xs font-medium text-green-600">
+                        <span className="text-[10px] font-medium text-green-600 sm:text-xs">
                           In Stock · {product.variant.stock} left
                         </span>
                       ) : (
-                        <span className="text-xs font-medium text-red-500">
+                        <span className="text-[10px] font-medium text-red-500 sm:text-xs">
                           Out of Stock
                         </span>
                       )}
                     </div>
 
                     {/* BUTTONS */}
-                    <div className="mt-5 flex gap-3">
+                    <div className="mt-4 flex gap-2 sm:mt-5 sm:gap-3">
                       <button
                         type="button"
                         disabled={product.variant.stock === 0}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#00ff03] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-2 py-2.5 text-xs font-semibold text-white transition hover:bg-[#00ff03] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
                       >
-                        <ShoppingBag size={17} />
+                        <ShoppingBag size={15} className="sm:h-[17px] sm:w-[17px]"/>
                         Add to Cart
                       </button>
 
                       <button
                         type="button"
                         aria-label="View product"
-                        className="flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:border-green-600 hover:text-green-600"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:border-green-600 hover:text-green-600 sm:h-11 sm:w-11"
                       >
                         <ArrowRight size={18} />
                       </button>

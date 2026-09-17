@@ -696,7 +696,7 @@ const Products = () => {
         ====================================================== */}
 
         <div className="border-b border-gray-100">
-          <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-8 sm:py-8 lg:px-12">
 
             {/* BREADCRUMB */}
 
@@ -728,7 +728,7 @@ const Products = () => {
                 OSTIK COLLECTION
               </p>
 
-              <h1 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[42px]">
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[42px]">
                 {categoryName || "All Products"}
               </h1>
 
@@ -748,11 +748,11 @@ const Products = () => {
 
         <div className="sticky top-0 z-30 border-b border-gray-200 bg-white">
 
-          <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
+          <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 sm:px-8 sm:py-4 lg:px-12">
 
             {/* LEFT */}
 
-            <div className="flex items-center gap-4">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
               {/* MOBILE FILTER */}
 
@@ -766,14 +766,17 @@ const Products = () => {
                   rounded-full
                   border
                   border-gray-200
-                  px-4
+                  px-3
                   py-2
-                  text-sm
+                  text-xs
                   font-medium
                   text-gray-900
                   transition
                   hover:border-gray-400
                   lg:hidden
+                  sm:px-4
+                  sm:py-2
+                  sm:text-sm
                 "
               >
                 <SlidersHorizontal size={17} />
@@ -796,7 +799,7 @@ const Products = () => {
 
               </div>
 
-              <span className="text-sm text-gray-400">
+              <span className="hidden text-sm text-gray-400 sm:block">
                 {sortedProducts.length} products
               </span>
 
@@ -825,15 +828,18 @@ const Products = () => {
                     border-gray-200
                     bg-white
                     py-2.5
-                    pl-4
-                    pr-10
-                    text-sm
+                    pl-3
+                    pr-9
+                    text-xs
                     font-medium
                     text-gray-900
                     outline-none
                     transition
                     hover:border-gray-400
                     focus:border-[#72c500]
+                    sm:pl-4
+                    sm:pr-10
+                    sm:text-sm
                   "
                 >
 
@@ -894,7 +900,7 @@ const Products = () => {
             MAIN PRODUCT SECTION
         ====================================================== */}
 
-        <div className="mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-8 sm:py-8 lg:px-12">
 
           <div className="flex items-start gap-8">
 
@@ -1301,10 +1307,9 @@ const Products = () => {
                 <div
                   className="
                     grid
-                    grid-cols-1
-                    gap-x-5
-                    gap-y-12
-                    sm:grid-cols-2
+                    grid-cols-2
+                    gap-3
+                    sm:gap-5
                     xl:grid-cols-3
                   "
                 >
@@ -1412,18 +1417,17 @@ const Products = () => {
                               <span
                                 className="
                                   absolute
-                                  left-4
-                                  top-4
-                                  rounded-full
-                                  bg-white
-                                  px-3
-                                  py-1.5
-                                  text-[10px]
+                                  left-2
+                                  top-2
+                                  px-2
+                                  py-1
+                                  text-[9px]
                                   font-semibold
-                                  uppercase
-                                  tracking-wider
-                                  text-gray-800
-                                  shadow-sm
+                                  sm:left-4
+                                  sm:top-4
+                                  sm:px-3
+                                  sm:py-1.5
+                                  sm:text-[10px]
                                 "
                               >
                                 New arrival
@@ -1436,15 +1440,20 @@ const Products = () => {
                               <span
                                 className="
                                   absolute
-                                  left-4
-                                  bottom-4
+                                  left-2
+                                  bottom-2
                                   rounded-full
                                   bg-red-500
-                                  px-3
-                                  py-1.5
-                                  text-[10px]
+                                  px-2
+                                  py-1
+                                  text-[9px]
                                   font-semibold
                                   text-white
+                                  sm:left-4
+                                  sm:bottom-4
+                                  sm:px-3
+                                  sm:py-1.5
+                                  sm:text-[10px]
                                 "
                               >
                                 -{discount}%
@@ -1465,17 +1474,21 @@ const Products = () => {
                               }
                               className={`
                                 absolute
-                                right-4
-                                top-4
+                                right-2
+                                top-2
                                 flex
-                                h-10
-                                w-10
+                                h-8
+                                w-8
                                 items-center
                                 justify-center
                                 rounded-full
                                 shadow-sm
                                 transition
                                 duration-200
+                                sm:right-4
+                                sm:top-4
+                                sm:h-10
+                                sm:w-10
                                 ${
                                   productInWishlist
                                     ? "bg-[#72c500] text-white"
@@ -1495,7 +1508,7 @@ const Products = () => {
                             >
 
                               <Heart
-                                size={18}
+                                size={16}
                                 strokeWidth={1.8}
                                 fill={
                                   productInWishlist
@@ -1512,7 +1525,7 @@ const Products = () => {
                               DETAILS
                           ================================= */}
 
-                          <div className="pt-4">
+                          <div className="pt-3 sm:pt-4">
 
                             {/* CATEGORY */}
 
@@ -1536,14 +1549,17 @@ const Products = () => {
                             <h2
                               className="
                                 line-clamp-2
-                                min-h-[48px]
-                                text-[16px]
+                                min-h-[42px]
+                                text-sm
                                 font-semibold
-                                leading-6
+                                leading-5
                                 text-gray-900
                                 transition
                                 group-hover:text-[#72c500]
                                 cursor-pointer
+                                sm:min-h-[48px]
+                                sm:text-[16px]
+                                sm:leading-6
                               "
                               onClick={() =>
                                 navigate(
@@ -1604,11 +1620,11 @@ const Products = () => {
 
                             {/* PRICE */}
 
-                            <div className="mt-3 flex items-center gap-2">
+                            <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3">
 
                               {variant ? (
                                 <>
-                                  <span className="text-lg font-bold text-gray-900">
+                                  <span className="text-sm font-bold text-gray-900 sm:text-lg">
                                     ₹
                                     {Math.round(
                                       finalPrice
@@ -1620,9 +1636,10 @@ const Products = () => {
                                   {discount > 0 && (
                                     <span
                                       className="
-                                        text-sm
+                                        text-[11px]
                                         text-gray-400
                                         line-through
+                                        sm:text-sm
                                       "
                                     >
                                       ₹
@@ -1635,7 +1652,7 @@ const Products = () => {
                                   )}
                                 </>
                               ) : (
-                                <span className="text-sm text-gray-400">
+                                <span className="hidden text-sm text-gray-400 sm:block">
                                   Price unavailable
                                 </span>
                               )}
@@ -1692,20 +1709,24 @@ const Products = () => {
                                 !variant
                               }
                               className={`
-                                mt-4
+                                mt-3
                                 flex
                                 w-full
                                 items-center
                                 justify-center
-                                gap-2
+                                gap-1.5
                                 rounded-full
-                                px-4
+                                px-3
                                 py-2.5
-                                text-sm
+                                text-xs
                                 font-semibold
                                 transition
                                 cursor-pointer
                                 duration-300
+                                sm:mt-4
+                                sm:gap-2
+                                sm:px-4
+                                sm:text-sm
                                 ${
                                   inStock &&
                                   variant
@@ -1715,7 +1736,7 @@ const Products = () => {
                               `}
                             >
 
-                              <ShoppingCart size={16} />
+                              <ShoppingCart size={15} />
 
                               {inStock &&
                               variant
