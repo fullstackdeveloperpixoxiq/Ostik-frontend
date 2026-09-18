@@ -446,7 +446,7 @@ const handleProtectedNavigation= (path)=>{
         top-0
         z-[100]
         w-full
-        bg-[#2b2b2b]
+        bg-[#000000]
         border-b
         border-gray-200
         font-['Helvetica',_Arial,_sans-serif]
@@ -463,7 +463,7 @@ const handleProtectedNavigation= (path)=>{
             TOP SECTION
         ====================================================== */}
 
-        <div className="h-[120px] px-8 flex items-center">
+        <div className="h-[110px] px-8 flex items-center">
 
           {/* SEARCH */}
 
