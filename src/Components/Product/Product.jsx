@@ -20,6 +20,7 @@ const Products = () => {
   const [searchParams] = useSearchParams();
 
   const categorySlug = searchParams.get("category");
+  const searchQuery = searchParams.get("search");
 
   const [products, setProducts] = useState([]);
   const [categoryName, setCategoryName] = useState("");
@@ -67,24 +68,35 @@ const Products = () => {
         setLoading(true);
         setError("");
 
-        let url = `${import.meta.env.VITE_API_URL}/api/product`;
-
+        const params= {}
+       //catcgory filter
         if (categorySlug) {
-          url += `?category=${categorySlug}`;
+          params.category = categorySlug;
         }
 
-        const response = await axios.get(url);
+        // Search filter
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/product`,
+        {
+          params,
+        }
+        );
 
         const fetchedProducts = response.data.products || [];
 
         setProducts(fetchedProducts);
 
-        if (fetchedProducts.length > 0) {
+        if(categorySlug && fetchedProducts.length >0){
           setCategoryName(
-            fetchedProducts[0]?.category?.name || ""
-          );
-        } else {
-          setCategoryName("");
+          fetchedProducts[0]?.category?.name || ""
+        );
+        }
+        else{
+          setCategoryName("")
         }
       } catch (err) {
         console.log("PRODUCT FETCH ERROR:", err);
@@ -708,13 +720,22 @@ const Products = () => {
 
               <span>Products</span>
 
-              {categoryName && (
+              {categoryName && !searchQuery && (
                 <>
                   <ChevronRight size={13} />
 
                   <span className="text-gray-700">
                     {categoryName}
                   </span>
+                </>
+              )}
+
+              {searchQuery && (
+                <>
+                <ChevronRight size={13}/>
+                <span className="text-gray-700">
+                  Search
+                </span>
                 </>
               )}
 
@@ -729,7 +750,9 @@ const Products = () => {
               </p>
 
               <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[42px]">
-                {categoryName || "All Products"}
+                {searchQuery ? 
+                `Search result for "${searchQuery}"`
+                : categoryName || "All Products"}
               </h1>
 
               <p className="mx-auto mt-4 max-w-[600px] text-sm leading-6 text-gray-500">

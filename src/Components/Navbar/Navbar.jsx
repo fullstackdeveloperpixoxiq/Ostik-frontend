@@ -57,6 +57,21 @@ const Navbar = () => {
 
   const lastScrollYRef = useRef(0);
 
+
+  // =========================================================
+// PROTECTED NAVIGATION
+// =========================================================
+
+const handleProtectedNavigation= (path)=>{
+  const token= localStorage.getItem("token")
+
+  if(!token){
+    navigate("/login")
+    return
+  }
+  navigate(path)
+}
+
   // =========================================================
   // FETCH CATEGORIES
   // =========================================================
@@ -191,11 +206,21 @@ const Navbar = () => {
   // MAIN CATEGORY EXPAND / COLLAPSE
   // =========================================================
 
-  const handleMainCategoryClick = (categoryId) => {
-    setExpandedCategory((previous) =>
-      previous === categoryId ? null : categoryId
-    );
+  const handleMainCategoryClick = (category) => {
+    setProductsOpen(false);
+    setMobileProductsOpen(false)
+    setMenuOpen(false)
+    setExpandedCategory(null)
+    
+    navigate(`/products?category=${category.slug}`);
   };
+
+
+  const handleCategoryExpand = (categoryId) => {
+  setExpandedCategory((previous) =>
+    previous === categoryId ? null : categoryId
+  );
+};
 
   // =========================================================
   // OPEN PRODUCTS MENU
@@ -723,7 +748,7 @@ const Navbar = () => {
 
               <button
                 type="button"
-                onClick={() => navigate("/wishlist")}
+                onClick={() => handleProtectedNavigation("/wishlist")}
                 className="
                   text-white
                   hover:text-[#00ff03]
@@ -767,7 +792,7 @@ const Navbar = () => {
 
               <button
                 type="button"
-                onClick={() => navigate("/cart")}
+                onClick={() => handleProtectedNavigation("/cart")}
                 className="
                   relative
                   text-white
@@ -934,7 +959,7 @@ const Navbar = () => {
                       top-[86px]
                       left-0
                       w-[550px]
-                      max-h-[520px]
+                      max-h-[calc(100vh-250px)]
                       overflow-y-auto
                       rounded-b-2xl
                       border
@@ -977,133 +1002,109 @@ const Navbar = () => {
                     {mainCategories.length > 0 ? (
 
                       <div className="grid grid-cols-2 gap-x-10">
-
                         {mainCategories.map((category) => {
+  const subCategories = getSubCategories(category._id);
+  const isExpanded = expandedCategory === category._id;
 
-                          const subCategories =
-                            getSubCategories(
-                              category._id
-                            );
+  return (
+    <div
+      key={category._id}
+      className="border-b border-gray-100"
+    >
+      {/* MAIN CATEGORY ROW */}
 
-                          const isExpanded =
-                            expandedCategory ===
-                            category._id;
+      <div className="w-full flex items-center">
 
-                          return (
+        {/* CATEGORY NAME → NAVIGATE */}
 
-                            <div
-                              key={category._id}
-                              className="
-                                border-b
-                                border-gray-100
-                              "
-                            >
+        <button
+          type="button"
+          onClick={() => handleMainCategoryClick(category)}
+          className="
+            flex-1
+            py-4
+            text-left
+            text-[16px]
+            font-bold
+            text-gray-800
+            hover:text-[#00e603]
+            transition-colors
+          "
+        >
+          {category.name}
+        </button>
 
-                              {/* MAIN CATEGORY BUTTON */}
+        {/* ARROW → EXPAND ONLY */}
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleMainCategoryClick(
-                                    category._id
-                                  )
-                                }
-                                className="
-                                  w-full
-                                  flex
-                                  items-center
-                                  justify-between
-                                  py-4
-                                  text-left
-                                  text-[16px]
-                                  font-bold
-                                  text-gray-800
-                                  hover:text-[#00e603]
-                                  transition-colors
-                                "
-                              >
+        {subCategories.length > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              handleCategoryExpand(category._id)
+            }
+            className="
+              p-2
+              text-gray-600
+              hover:text-[#00e603]
+              transition-colors
+            "
+            aria-label={`Show ${category.name} subcategories`}
+          >
+            <ChevronRight
+              size={18}
+              className={`
+                transition-transform
+                duration-300
+                ${
+                  isExpanded
+                    ? "rotate-90"
+                    : ""
+                }
+              `}
+            />
+          </button>
+        )}
 
-                                <span>
-                                  {category.name}
-                                </span>
+      </div>
 
-                                {subCategories.length >
-                                  0 && (
+      {/* SUBCATEGORIES */}
 
-                                  <ChevronRight
-                                    size={18}
-                                    className={`
-                                      transition-transform
-                                      duration-300
-                                      ${
-                                        isExpanded
-                                          ? "rotate-90"
-                                          : ""
-                                      }
-                                    `}
-                                  />
-
-                                )}
-
-                              </button>
-
-                              {/* SUBCATEGORY LIST */}
-
-                              {isExpanded &&
-                                subCategories.length >
-                                  0 && (
-
-                                  <div
-                                    className="
-                                      pb-4
-                                      pl-4
-                                      flex
-                                      flex-col
-                                      gap-3
-                                      border-l-2
-                                      border-gray-100
-                                    "
-                                  >
-
-                                    {subCategories.map(
-                                      (subCategory) => (
-
-                                        <button
-                                          key={
-                                            subCategory._id
-                                          }
-                                          type="button"
-                                          onClick={() =>
-                                            handleCategoryClick(
-                                              subCategory
-                                            )
-                                          }
-                                          className="
-                                            text-left
-                                            text-[14px]
-                                            text-gray-500
-                                            hover:text-[#00e603]
-                                            transition-colors
-                                            duration-200
-                                          "
-                                        >
-                                          {
-                                            subCategory.name
-                                          }
-                                        </button>
-
-                                      )
-                                    )}
-
-                                  </div>
-
-                                )}
-
-                            </div>
-
-                          );
-                        })}
-
+      {isExpanded && subCategories.length > 0 && (
+        <div
+          className="
+            pb-4
+            pl-4
+            flex
+            flex-col
+            gap-3
+            border-l-2
+            border-gray-100
+          "
+        >
+          {subCategories.map((subCategory) => (
+            <button
+              key={subCategory._id}
+              type="button"
+              onClick={() =>
+                handleCategoryClick(subCategory)
+              }
+              className="
+                text-left
+                text-[14px]
+                text-gray-500
+                hover:text-[#00e603]
+                transition-colors
+                duration-200
+              "
+            >
+              {subCategory.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+})}
                       </div>
 
                     ) : (
@@ -1427,7 +1428,7 @@ const Navbar = () => {
 
             <button
               type="button"
-              onClick={() => navigate("/cart")}
+              onClick={() => handleProtectedNavigation("/cart")}
               className="
                 relative
                 text-white
@@ -1787,114 +1788,115 @@ const Navbar = () => {
                             return (
 
                               <div
-                                key={category._id}
-                                className="
-                                  border-b
-                                  border-gray-200
-                                  last:border-b-0
-                                "
-                              >
+    key={category._id}
+    className="
+      border-b
+      border-gray-200
+      last:border-b-0
+    "
+  >
 
-                                {/* MAIN CATEGORY */}
+    {/* MAIN CATEGORY ROW */}
 
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleMainCategoryClick(
-                                      category._id
-                                    )
-                                  }
-                                  className="
-                                    w-full
-                                    flex
-                                    items-center
-                                    justify-between
-                                    py-4
-                                    text-left
-                                    text-base
-                                    font-bold
-                                    text-gray-700
-                                    hover:text-[#00e603]
-                                    transition-colors
-                                  "
-                                >
+    <div className="w-full flex items-center">
 
-                                  <span>
-                                    {category.name}
-                                  </span>
+      {/* CATEGORY NAME → NAVIGATE */}
 
-                                  {subCategories.length >
-                                    0 && (
+      <button
+        type="button"
+        onClick={() =>
+          handleMainCategoryClick(category)
+        }
+        className="
+          flex-1
+          py-4
+          text-left
+          text-base
+          font-bold
+          text-gray-700
+          hover:text-[#00e603]
+          transition-colors
+        "
+      >
+        {category.name}
+      </button>
 
-                                    <ChevronRight
-                                      size={18}
-                                      className={`
-                                        transition-transform
-                                        duration-300
-                                        ${
-                                          isExpanded
-                                            ? "rotate-90"
-                                            : ""
-                                        }
-                                      `}
-                                    />
+      {/* ARROW → EXPAND ONLY */}
 
-                                  )}
+      {subCategories.length > 0 && (
+        <button
+          type="button"
+          onClick={() =>
+            handleCategoryExpand(category._id)
+          }
+          className="
+            p-2
+            text-gray-600
+            hover:text-[#00e603]
+            transition-colors
+          "
+          aria-label={`Show ${category.name} subcategories`}
+        >
+          <ChevronRight
+            size={18}
+            className={`
+              transition-transform
+              duration-300
+              ${
+                isExpanded
+                  ? "rotate-90"
+                  : ""
+              }
+            `}
+          />
+        </button>
+      )}
 
-                                </button>
+    </div>
 
-                                {/* SUBCATEGORIES */}
+    {/* SUBCATEGORIES */}
 
-                                {isExpanded &&
-                                  subCategories.length >
-                                    0 && (
+    {isExpanded &&
+      subCategories.length > 0 && (
+        <div
+          className="
+            pb-4
+            pl-4
+            flex
+            flex-col
+            gap-3
+            border-l-2
+            border-gray-200
+          "
+        >
 
-                                    <div
-                                      className="
-                                        pb-4
-                                        pl-4
-                                        flex
-                                        flex-col
-                                        gap-3
-                                        border-l-2
-                                        border-gray-200
-                                      "
-                                    >
+          {subCategories.map(
+            (subCategory) => (
+              <button
+                key={subCategory._id}
+                type="button"
+                onClick={() =>
+                  handleCategoryClick(
+                    subCategory
+                  )
+                }
+                className="
+                  text-left
+                  text-sm
+                  text-gray-500
+                  hover:text-[#00e603]
+                  transition-colors
+                "
+              >
+                {subCategory.name}
+              </button>
+            )
+          )}
 
-                                      {subCategories.map(
-                                        (subCategory) => (
+        </div>
+      )}
 
-                                          <button
-                                            key={
-                                              subCategory._id
-                                            }
-                                            type="button"
-                                            onClick={() =>
-                                              handleCategoryClick(
-                                                subCategory
-                                              )
-                                            }
-                                            className="
-                                              text-left
-                                              text-sm
-                                              text-gray-500
-                                              hover:text-[#00e603]
-                                              transition-colors
-                                            "
-                                          >
-                                            {
-                                              subCategory.name
-                                            }
-                                          </button>
-
-                                        )
-                                      )}
-
-                                    </div>
-
-                                  )}
-
-                              </div>
+  </div>
 
                             );
                           }
