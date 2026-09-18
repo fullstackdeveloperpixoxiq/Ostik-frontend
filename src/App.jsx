@@ -23,13 +23,13 @@ function App() {
     <>
     <Toaster position='top-right' richColors/> {/*for give to response on every success and error*/}
     <Routes>
-      <Route element={<MainLayout/>}>
+      {/* <Route path='/' element={<MainLayout/>}> */}
 
       <Route
           path="/"
-          element={<h1>Home Page</h1>}
+          element={<MainLayout/>}
         />
-      </Route>
+      {/* </Route> */}
 
       <Route
       path='/register'
