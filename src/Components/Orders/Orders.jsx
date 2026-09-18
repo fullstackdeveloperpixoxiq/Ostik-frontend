@@ -14,7 +14,7 @@ import {
   MapPin,
   X,
   Star,
-  ImagePlus
+  ImagePlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,17 +31,21 @@ const Orders = () => {
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
 
-const [reviewOpen, setReviewOpen] = useState(false);
-const [selectedProduct, setSelectedProduct] = useState(null);
-const [selectedOrder, setSelectedOrder] = useState(null);
+  // =====================================================
+  // REVIEW STATES
+  // =====================================================
 
-const [reviewRating, setReviewRating] = useState(0);
-const [reviewComment, setReviewComment] = useState("");
-const [reviewImages, setReviewImages] = useState([]);
-const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-const [myReviews, setMyReviews] = useState([]);
-const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewImages, setReviewImages] = useState([]);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
+  const [myReviews, setMyReviews] = useState([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   // =====================================================
   // GET TOKEN
@@ -58,17 +62,13 @@ const [reviewLoading, setReviewLoading] = useState(false);
       setLoading(true);
       setError("");
 
-      if (!token) {
-        throw new Error("Please login to view your orders");
-      }
-
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/order`,
         {
           withCredentials: true,
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -78,44 +78,77 @@ const [reviewLoading, setReviewLoading] = useState(false);
     } catch (err) {
       console.error("Fetch orders error:", err);
 
+      // Token expired / invalid
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login");
+        return;
+      }
+
       setError(
-        err.message || "Something went wrong"
+        err.response?.data?.message ||
+          err.message ||
+          "Something went wrong"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchMyReviews= async()=>{
-    try{
-        if(!token) return;
+  // =====================================================
+  // FETCH MY REVIEWS
+  // =====================================================
 
-        setReviewLoading(true);
+  const fetchMyReviews = async () => {
+    try {
+      if (!token) return;
 
-        const response= await axios(
-          `${import.meta.env.VITE_API_URL}/api/review/my-reviews`,
-          {
-             withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`,
-           },
-          }
-        );
+      setReviewLoading(true);
 
-        const data= response.data
-         
-    setMyReviews(data.reviews || []);
-    }
-    catch(err){
-        console.error("Fetch reviews error:", err);
-    }finally{
-      setReviewLoading(false)
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/review/my-reviews`,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = response.data;
+
+      setMyReviews(data.reviews || []);
+    } catch (err) {
+      console.error("Fetch reviews error:", err);
+
+      // Token expired / invalid
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login");
+        return;
+      }
+    } finally {
+      setReviewLoading(false);
     }
   };
-// for initial load
+
+  // =====================================================
+  // INITIAL LOAD
+  // =====================================================
+
   useEffect(() => {
+    // User is not logged in
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     fetchOrders();
-    fetchMyReviews()
+    fetchMyReviews();
   }, []);
 
   // =====================================================
@@ -127,7 +160,9 @@ const [reviewLoading, setReviewLoading] = useState(false);
       setCancellingId(orderId);
 
       if (!token) {
-        throw new Error("Please login to cancel the order");
+        toast.error("Please login to cancel the order");
+        navigate("/login");
+        return;
       }
 
       const response = await axios.put(
@@ -136,12 +171,10 @@ const [reviewLoading, setReviewLoading] = useState(false);
         {
           withCredentials: true,
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
-
-      const data = response.data;
 
       // Update order locally
       setOrders((prevOrders) =>
@@ -155,12 +188,24 @@ const [reviewLoading, setReviewLoading] = useState(false);
         )
       );
 
-      toast.success(response.data.message);
+      toast.success(
+        response.data.message || "Order cancelled successfully"
+      );
     } catch (err) {
       console.error("Cancel order error:", err);
 
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login");
+        return;
+      }
+
       toast.error(
-        err.message || "Unable to cancel order"
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to cancel order"
       );
     } finally {
       setCancellingId(null);
@@ -185,7 +230,10 @@ const [reviewLoading, setReviewLoading] = useState(false);
     });
   };
 
-  //Open review modal
+  // =====================================================
+  // OPEN REVIEW MODAL
+  // =====================================================
+
   const openReviewModal = (order, item) => {
     setSelectedOrder(order);
     setSelectedProduct(item);
@@ -197,8 +245,10 @@ const [reviewLoading, setReviewLoading] = useState(false);
     setReviewOpen(true);
   };
 
+  // =====================================================
+  // CLOSE REVIEW MODAL
+  // =====================================================
 
-  //Review modal
   const closeReviewModal = () => {
     if (reviewSubmitting) return;
 
@@ -212,7 +262,10 @@ const [reviewLoading, setReviewLoading] = useState(false);
     setReviewImages([]);
   };
 
-  //image selection
+  // =====================================================
+  // IMAGE SELECTION
+  // =====================================================
+
   const handleReviewImages = (e) => {
     const files = Array.from(e.target.files || []);
 
@@ -220,6 +273,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
 
     if (files.length > 3) {
       toast.error("You can upload up to 3 images");
+      e.target.value = "";
       return;
     }
 
@@ -229,6 +283,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
 
     if (validFiles.length !== files.length) {
       toast.error("Only image files are allowed");
+      e.target.value = "";
       return;
     }
 
@@ -238,15 +293,20 @@ const [reviewLoading, setReviewLoading] = useState(false);
     e.target.value = "";
   };
 
-  //Remove review image
+  // =====================================================
+  // REMOVE REVIEW IMAGE
+  // =====================================================
+
   const removeReviewImage = (index) => {
     setReviewImages((prev) =>
       prev.filter((_, i) => i !== index)
     );
   };
 
+  // =====================================================
+  // CHECK ALREADY REVIEWED
+  // =====================================================
 
-  //check already reviewed
   const hasReviewed = (orderId, productId) => {
     return myReviews.some((review) => {
       const reviewOrderId =
@@ -262,12 +322,15 @@ const [reviewLoading, setReviewLoading] = useState(false);
     });
   };
 
+  // =====================================================
+  // SUBMIT REVIEW
+  // =====================================================
 
-  //submit review
-   const handleSubmitReview = async () => {
+  const handleSubmitReview = async () => {
     try {
       if (!token) {
         toast.error("Please login to submit a review");
+        navigate("/login");
         return;
       }
 
@@ -283,8 +346,9 @@ const [reviewLoading, setReviewLoading] = useState(false);
 
       setReviewSubmitting(true);
 
-      // FormData is required because
-      // we are sending images along with text
+      // =================================================
+      // FORM DATA
+      // =================================================
 
       const formData = new FormData();
 
@@ -308,38 +372,38 @@ const [reviewLoading, setReviewLoading] = useState(false);
         reviewComment
       );
 
-      // Add selected images
-
+      // Add images
       reviewImages.forEach((file) => {
         formData.append("images", file);
       });
 
+      // =================================================
+      // API REQUEST
+      // =================================================
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/review`,
-          formData,
-          {
-            withCredentials: true,
-            headers: {
-              Autthorization: `Bearer ${token}`
-            }
-          }
-        
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = response.data;
 
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to submit review"
-        );
-      }
+      // =================================================
+      // SUCCESS
+      // =================================================
 
       toast.success(
-        data.message || "Review submitted successfully"
+        data.message ||
+          "Review submitted successfully"
       );
 
       // Add new review to local state
-
       if (data.review) {
         setMyReviews((prev) => [
           ...prev,
@@ -348,15 +412,24 @@ const [reviewLoading, setReviewLoading] = useState(false);
       }
 
       closeReviewModal();
-
     } catch (err) {
       console.error(
         "Submit review error:",
         err
       );
 
+      // Token expired / invalid
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login");
+        return;
+      }
+
       toast.error(
-        err.message ||
+        err.response?.data?.message ||
+          err.message ||
           "Unable to submit review"
       );
     } finally {
@@ -384,11 +457,14 @@ const [reviewLoading, setReviewLoading] = useState(false);
   const formatDate = (date) => {
     if (!date) return "N/A";
 
-    return new Date(date).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return new Date(date).toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }
+    );
   };
 
   // =====================================================
@@ -558,9 +634,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
       <div className="min-h-screen bg-[#f8f9f7]">
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
 
-          {/* ================================================= */}
           {/* PAGE HEADER */}
-          {/* ================================================= */}
 
           <div className="mb-8">
             <div className="flex items-center gap-3">
@@ -583,9 +657,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
             </div>
           </div>
 
-          {/* ================================================= */}
           {/* FILTER TABS */}
-          {/* ================================================= */}
 
           <div className="mb-7 overflow-x-auto">
             <div className="flex min-w-max gap-2 rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm">
@@ -607,9 +679,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
             </div>
           </div>
 
-          {/* ================================================= */}
           {/* EMPTY ORDERS */}
-          {/* ================================================= */}
 
           {filteredOrders.length === 0 && (
             <div className="rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
@@ -643,9 +713,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
             </div>
           )}
 
-          {/* ================================================= */}
           {/* ORDER LIST */}
-          {/* ================================================= */}
 
           <div className="space-y-5">
             {filteredOrders.map((order) => {
@@ -661,9 +729,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
                   className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
                 >
 
-                  {/* ========================================= */}
                   {/* ORDER HEADER */}
-                  {/* ========================================= */}
 
                   <div className="border-b border-gray-100 bg-gray-50/70 px-4 py-4 sm:px-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -716,9 +782,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
                     </div>
                   </div>
 
-                  {/* ========================================= */}
                   {/* ORDER ITEMS */}
-                  {/* ========================================= */}
 
                   <div className="divide-y divide-gray-100">
                     {order.items?.map(
@@ -827,29 +891,25 @@ const [reviewLoading, setReviewLoading] = useState(false);
                                   </span>
                                 </span>
                               </div>
-                              {/* review button */}
+
+                              {/* REVIEW BUTTON */}
+
                               {order.orderStatus ===
                                 "Delivered" && (
-
                                 <div className="mt-4">
 
                                   {hasReviewed(
                                     order._id,
                                     item.productId
                                   ) ? (
-
                                     <div className="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
-
                                       <CheckCircle2
                                         size={15}
                                       />
 
                                       Reviewed
-
                                     </div>
-
                                   ) : (
-
                                     <button
                                       onClick={() =>
                                         openReviewModal(
@@ -859,20 +919,16 @@ const [reviewLoading, setReviewLoading] = useState(false);
                                       }
                                       className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 transition hover:border-green-300 hover:bg-green-50"
                                     >
-
                                       <Star
                                         size={16}
                                         className="fill-yellow-400 text-yellow-400"
                                       />
 
                                       Write a Review
-
                                     </button>
-
                                   )}
 
                                 </div>
-
                               )}
                             </div>
                           </div>
@@ -881,9 +937,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
                     )}
                   </div>
 
-                  {/* ========================================= */}
                   {/* ORDER FOOTER */}
-                  {/* ========================================= */}
 
                   <div className="border-t border-gray-100 px-4 py-4 sm:px-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1003,9 +1057,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
                     </div>
                   </div>
 
-                  {/* ========================================= */}
                   {/* TRACKING */}
-                  {/* ========================================= */}
 
                   {order.trackingNumber &&
                     order.orderStatus !==
@@ -1039,9 +1091,7 @@ const [reviewLoading, setReviewLoading] = useState(false);
             })}
           </div>
 
-          {/* ================================================= */}
           {/* BOTTOM INFO */}
-          {/* ================================================= */}
 
           {orders.length > 0 && (
             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-400">
@@ -1057,9 +1107,12 @@ const [reviewLoading, setReviewLoading] = useState(false);
       </div>
 
       <Footer />
-      {/* Review modal */}
-      {reviewOpen && selectedProduct && (
 
+      {/* ===================================================== */}
+      {/* REVIEW MODAL */}
+      {/* ===================================================== */}
+
+      {reviewOpen && selectedProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm">
 
           <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl">
@@ -1071,15 +1124,12 @@ const [reviewLoading, setReviewLoading] = useState(false);
               disabled={reviewSubmitting}
               className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-900 disabled:opacity-50"
             >
-
               <X size={18} />
-
             </button>
 
             {/* MODAL HEADER */}
 
             <div className="border-b border-gray-100 px-6 py-5">
-
               <h2 className="text-xl font-semibold text-gray-900">
                 Write a Review
               </h2>
@@ -1087,7 +1137,6 @@ const [reviewLoading, setReviewLoading] = useState(false);
               <p className="mt-1 text-sm text-gray-500">
                 Share your experience with this product
               </p>
-
             </div>
 
             <div className="space-y-6 px-6 py-6">
@@ -1099,24 +1148,18 @@ const [reviewLoading, setReviewLoading] = useState(false);
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
 
                   {selectedProduct.image ? (
-
                     <img
                       src={selectedProduct.image}
                       alt={selectedProduct.name}
                       className="h-full w-full object-contain p-1"
                     />
-
                   ) : (
-
                     <div className="flex h-full w-full items-center justify-center">
-
                       <Package
                         size={22}
                         className="text-gray-300"
                       />
-
                     </div>
-
                   )}
 
                 </div>
@@ -1128,15 +1171,12 @@ const [reviewLoading, setReviewLoading] = useState(false);
                   </h3>
 
                   {selectedProduct.variantName && (
-
                     <p className="mt-1 text-xs text-gray-500">
                       {selectedProduct.variantName}
                     </p>
-
                   )}
 
                 </div>
-
               </div>
 
               {/* RATING */}
@@ -1151,7 +1191,6 @@ const [reviewLoading, setReviewLoading] = useState(false);
 
                   {[1, 2, 3, 4, 5].map(
                     (star) => (
-
                       <button
                         key={star}
                         type="button"
@@ -1162,7 +1201,6 @@ const [reviewLoading, setReviewLoading] = useState(false);
                         }
                         className="transition-transform hover:scale-110"
                       >
-
                         <Star
                           size={30}
                           className={
@@ -1172,22 +1210,17 @@ const [reviewLoading, setReviewLoading] = useState(false);
                               : "text-gray-300"
                           }
                         />
-
                       </button>
-
                     )
                   )}
 
                   {reviewRating > 0 && (
-
                     <span className="ml-2 text-sm font-medium text-gray-600">
                       {reviewRating}/5
                     </span>
-
                   )}
 
                 </div>
-
               </div>
 
               {/* COMMENT */}
@@ -1239,7 +1272,6 @@ const [reviewLoading, setReviewLoading] = useState(false);
                   {/* ADD PHOTO */}
 
                   {reviewImages.length < 3 && (
-
                     <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-green-300 hover:bg-green-50">
 
                       <ImagePlus
@@ -1262,14 +1294,12 @@ const [reviewLoading, setReviewLoading] = useState(false);
                       />
 
                     </label>
-
                   )}
 
                   {/* IMAGE PREVIEWS */}
 
                   {reviewImages.map(
                     (file, index) => (
-
                       <div
                         key={`${file.name}-${index}`}
                         className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50"
@@ -1294,13 +1324,10 @@ const [reviewLoading, setReviewLoading] = useState(false);
                           }
                           className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white transition hover:bg-black"
                         >
-
                           <X size={14} />
-
                         </button>
 
                       </div>
-
                     )
                   )}
 
@@ -1338,22 +1365,16 @@ const [reviewLoading, setReviewLoading] = useState(false);
               >
 
                 {reviewSubmitting ? (
-
                   <>
-
                     <Loader2
                       size={16}
                       className="animate-spin"
                     />
 
                     Submitting...
-
                   </>
-
                 ) : (
-
                   "Submit Review"
-
                 )}
 
               </button>
@@ -1363,7 +1384,6 @@ const [reviewLoading, setReviewLoading] = useState(false);
           </div>
 
         </div>
-
       )}
     </>
   );

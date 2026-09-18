@@ -1,11 +1,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SuperBanner = () => {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const navigate= useNavigate();
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -94,14 +97,14 @@ const SuperBanner = () => {
                 {banner.title}
               </h1>
 
-              <a
-                href={banner.buttonLink || "/products"}
-                className="mt-5 sm:mt-7 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition hover:bg-[#00e603]"
-              >
-                {banner.buttonText || "Shop Now"}
+              <button
+  onClick={() => navigate(banner.buttonLink || "/products")}
+  className="mt-5 sm:mt-7 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition hover:bg-[#00e603]"
+>
+  {banner.buttonText || "Shop Now"}
 
-                <ArrowRight size={18} />
-              </a>
+  <ArrowRight size={18} />
+</button>
 
             </div>
           </div>
