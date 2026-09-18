@@ -327,10 +327,10 @@ const Footer = () => {
                 />
 
                 <a
-                  href="tel:+919000000000"
+                  href="tel:+918590497358"
                   className="hover:text-[#00ff03]"
                 >
-                  +91 90000 00000
+                  +91 85904 97358
                 </a>
 
               </div>
@@ -349,7 +349,7 @@ const Footer = () => {
                   href="mailto:support@ostik.com"
                   className="hover:text-[#00ff03]"
                 >
-                  support@ostik.com
+                  support@ostik.in
                 </a>
 
               </div>
