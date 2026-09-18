@@ -1383,7 +1383,7 @@ const Products = () => {
                                 className="
                                   h-full
                                   w-full
-                                  object-cover
+                                  object-contain
                                   transition
                                   duration-500
                                   ease-out
