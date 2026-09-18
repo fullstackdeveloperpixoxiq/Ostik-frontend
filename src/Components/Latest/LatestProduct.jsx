@@ -26,13 +26,16 @@ const LatestProducts = () => {
           `${import.meta.env.VITE_API_URL}/api/product`
         );
 
-        // Backend already sorts by createdAt DESC
+        // Backend sorts products by createdAt DESC
         const latestProducts = response.data.products || [];
 
-        // Only show latest 4
+        // Show only latest 4 products
         setProducts(latestProducts.slice(0, 4));
       } catch (error) {
-        console.log("Error fetching latest products:", error);
+        console.log(
+          "Error fetching latest products:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -48,7 +51,9 @@ const LatestProducts = () => {
     const fetchWishlist = async () => {
       const token = localStorage.getItem("token");
 
+      // User not logged in
       if (!token) {
+        setWishlistProducts([]);
         return;
       }
 
@@ -62,17 +67,31 @@ const LatestProducts = () => {
           }
         );
 
-        const products = response.data.wishlist?.products || [];
+        const wishlist =
+          response.data.wishlist?.products || [];
 
         setWishlistProducts(
-          products
+          wishlist
             .map((product) =>
-              typeof product === "string" ? product : product?._id
+              typeof product === "string"
+                ? product
+                : product?._id
             )
             .filter(Boolean)
         );
       } catch (error) {
-        console.log("Error fetching wishlist:", error);
+        console.log(
+          "Error fetching wishlist:",
+          error
+        );
+
+        // Token expired
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          setWishlistProducts([]);
+        }
       }
     };
 
@@ -94,7 +113,10 @@ const LatestProducts = () => {
 
     // User not logged in
     if (!token) {
-      toast.error("Please login to add products to wishlist");
+      toast.error(
+        "Please login to add products to wishlist"
+      );
+
       navigate("/login");
       return;
     }
@@ -122,7 +144,8 @@ const LatestProducts = () => {
         );
 
         toast.success(
-          response.data.message || "Removed from wishlist"
+          response.data.message ||
+            "Removed from wishlist"
         );
       }
 
@@ -142,14 +165,21 @@ const LatestProducts = () => {
           }
         );
 
-        setWishlistProducts((prev) => [...prev, productId]);
+        setWishlistProducts((prev) => [
+          ...prev,
+          productId,
+        ]);
 
         toast.success(
-          response.data.message || "Added to wishlist"
+          response.data.message ||
+            "Added to wishlist"
         );
       }
     } catch (error) {
-      console.log("Wishlist error:", error);
+      console.log(
+        "Wishlist error:",
+        error
+      );
 
       // =====================================
       // TOKEN EXPIRED / UNAUTHORIZED
@@ -160,7 +190,10 @@ const LatestProducts = () => {
 
         setWishlistProducts([]);
 
-        toast.error("Session expired. Please login again");
+        toast.error(
+          "Session expired. Please login again"
+        );
+
         navigate("/login");
       } else {
         toast.error(
@@ -177,7 +210,9 @@ const LatestProducts = () => {
   // GET VARIANT DATA
   // =====================================
   const getDisplayVariant = (product) => {
-    const activeVariants = (product.variants || []).filter(
+    const activeVariants = (
+      product.variants || []
+    ).filter(
       (variant) => variant.isActive
     );
 
@@ -186,19 +221,26 @@ const LatestProducts = () => {
     }
 
     // Find variant with lowest final price
-    return activeVariants.reduce((lowest, current) => {
-      const currentFinalPrice =
-        current.price -
-        (current.price * current.discountPercent) / 100;
+    return activeVariants.reduce(
+      (lowest, current) => {
+        const currentFinalPrice =
+          current.price -
+          (current.price *
+            current.discountPercent) /
+            100;
 
-      const lowestFinalPrice =
-        lowest.price -
-        (lowest.price * lowest.discountPercent) / 100;
+        const lowestFinalPrice =
+          lowest.price -
+          (lowest.price *
+            lowest.discountPercent) /
+            100;
 
-      return currentFinalPrice < lowestFinalPrice
-        ? current
-        : lowest;
-    });
+        return currentFinalPrice <
+          lowestFinalPrice
+          ? current
+          : lowest;
+      }
+    );
   };
 
   // =====================================
@@ -209,32 +251,40 @@ const LatestProducts = () => {
       if (!products.length) return;
 
       try {
-        const productsWithVariants = await Promise.all(
-          products.map(async (product) => {
-            try {
-              const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/variant/product/${product._id}`
-              );
+        const productsWithVariants =
+          await Promise.all(
+            products.map(
+              async (product) => {
+                try {
+                  const response =
+                    await axios.get(
+                      `${import.meta.env.VITE_API_URL}/api/variant/product/${product._id}`
+                    );
 
-              return {
-                ...product,
-                variants: response.data.variants || [],
-              };
-            } catch (error) {
-              console.log(
-                `Error fetching variants for ${product.name}`,
-                error
-              );
+                  return {
+                    ...product,
+                    variants:
+                      response.data
+                        .variants || [],
+                  };
+                } catch (error) {
+                  console.log(
+                    `Error fetching variants for ${product.name}`,
+                    error
+                  );
 
-              return {
-                ...product,
-                variants: [],
-              };
-            }
-          })
+                  return {
+                    ...product,
+                    variants: [],
+                  };
+                }
+              }
+            )
+          );
+
+        setProducts(
+          productsWithVariants
         );
-
-        setProducts(productsWithVariants);
       } catch (error) {
         console.log(
           "Error fetching product variants:",
@@ -261,22 +311,24 @@ const LatestProducts = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="overflow-hidden rounded-3xl bg-gray-50"
-            >
-              <div className="aspect-square animate-pulse bg-gray-200" />
+          {[1, 2, 3, 4].map(
+            (item) => (
+              <div
+                key={item}
+                className="overflow-hidden rounded-3xl bg-gray-50"
+              >
+                <div className="aspect-square animate-pulse bg-gray-200" />
 
-              <div className="space-y-3 p-5">
-                <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                <div className="space-y-3 p-5">
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
 
-                <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
 
-                <div className="h-5 w-1/3 animate-pulse rounded bg-gray-200" />
+                  <div className="h-5 w-1/3 animate-pulse rounded bg-gray-200" />
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </section>
     );
@@ -294,6 +346,7 @@ const LatestProducts = () => {
   // =====================================
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-8 sm:py-16 lg:px-10">
+
       {/* ============================= */}
       {/* HEADER */}
       {/* ============================= */}
@@ -313,14 +366,17 @@ const LatestProducts = () => {
           </p>
         </div>
 
-        {/* Desktop */}
-        <a
-          href="/products"
-          className="hidden items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#00e603] sm:flex"
+        {/* Desktop View All */}
+        <button
+          type="button"
+          onClick={() =>
+            navigate("/products")
+          }
+          className="hidden cursor-pointer items-center gap-2 text-sm font-semibold text-gray-900 transition-colors hover:text-[#00e603] sm:flex"
         >
           View All Products
           <ArrowRight size={18} />
-        </a>
+        </button>
       </div>
 
       {/* ============================= */}
@@ -328,12 +384,16 @@ const LatestProducts = () => {
       {/* ============================= */}
 
       <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+
         {products.map((product) => {
-          const variant = getDisplayVariant(product);
+          const variant =
+            getDisplayVariant(product);
 
           const finalPrice = variant
             ? variant.price -
-              (variant.price * variant.discountPercent) / 100
+              (variant.price *
+                variant.discountPercent) /
+                100
             : null;
 
           const image =
@@ -341,33 +401,45 @@ const LatestProducts = () => {
             product.images?.[0] ||
             "";
 
-          const productInWishlist = isInWishlist(product._id);
+          const productInWishlist =
+            isInWishlist(product._id);
 
           const wishlistIsLoading =
-            wishlistLoadingId === product._id;
+            wishlistLoadingId ===
+            product._id;
 
           return (
             <div
               key={product._id}
               className="group overflow-hidden rounded-3xl bg-gray-50"
             >
+
               {/* ============================= */}
               {/* IMAGE */}
               {/* ============================= */}
 
               <div className="relative aspect-square overflow-hidden bg-gray-100">
+
                 {image && (
                   <img
                     src={image}
                     alt={product.name}
-                    className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full cursor-pointer object-contain transition-transform duration-500 group-hover:scale-105"
+                    onClick={() =>
+                      navigate(
+                        `/product/${product._id}`
+                      )
+                    }
                   />
                 )}
 
                 {/* NEW BADGE */}
 
-                <span className="absolute left-2 top-2 rounded-full bg-[#00e603] px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[10px]">
-                  <GiftIcon color="red" size={15}/>
+                <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-[#00e603] px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[10px]">
+                  <GiftIcon
+                    color="red"
+                    size={15}
+                  />
                   New
                 </span>
 
@@ -375,8 +447,12 @@ const LatestProducts = () => {
 
                 <button
                   type="button"
-                  onClick={() => handleWishlist(product)}
-                  disabled={wishlistIsLoading}
+                  onClick={() =>
+                    handleWishlist(product)
+                  }
+                  disabled={
+                    wishlistIsLoading
+                  }
                   className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition-all sm:right-4 sm:top-4 sm:h-9 sm:w-9 ${
                     productInWishlist
                       ? "bg-[#00ff03] text-white"
@@ -408,6 +484,7 @@ const LatestProducts = () => {
               {/* ============================= */}
 
               <div className="p-3 sm:p-5">
+
                 {/* Rating */}
 
                 <div className="mb-2 flex items-center gap-1 text-xs">
@@ -418,17 +495,29 @@ const LatestProducts = () => {
                   />
 
                   <span className="font-medium text-gray-700">
-                    {product.ratingAverage?.toFixed(1) || "0.0"}
+                    {product.ratingAverage?.toFixed(
+                      1
+                    ) || "0.0"}
                   </span>
 
                   <span className="text-gray-400">
-                    ({product.ratingCount || 0})
+                    (
+                    {product.ratingCount ||
+                      0}
+                    )
                   </span>
                 </div>
 
                 {/* Product Name */}
 
-                <h3 className="min-h-[42px] text-sm font-semibold leading-5 text-gray-900 sm:min-h-[48px] sm:text-base sm:leading-6">
+                <h3
+                  onClick={() =>
+                    navigate(
+                      `/product/${product._id}`
+                    )
+                  }
+                  className="min-h-[42px] cursor-pointer text-sm font-semibold leading-5 text-gray-900 transition-colors hover:text-[#00e603] sm:min-h-[48px] sm:text-base sm:leading-6"
+                >
                   {product.name}
                 </h3>
 
@@ -436,19 +525,29 @@ const LatestProducts = () => {
 
                 {variant ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
+
                     <span className="text-sm font-bold text-gray-900 sm:text-base">
                       From ₹
-                      {finalPrice.toLocaleString("en-IN")}
+                      {finalPrice.toLocaleString(
+                        "en-IN"
+                      )}
                     </span>
 
-                    {variant.discountPercent > 0 && (
+                    {variant.discountPercent >
+                      0 && (
                       <>
                         <span className="text-xs text-gray-400 line-through">
-                          ₹{variant.price.toLocaleString("en-IN")}
+                          ₹
+                          {variant.price.toLocaleString(
+                            "en-IN"
+                          )}
                         </span>
 
                         <span className="text-xs font-semibold text-[#76B900]">
-                          {variant.discountPercent}% OFF
+                          {
+                            variant.discountPercent
+                          }
+                          % OFF
                         </span>
                       </>
                     )}
@@ -461,13 +560,19 @@ const LatestProducts = () => {
 
                 {/* VIEW PRODUCT */}
 
-                <a
-                  href={`/product/${product._id}`}
-                  className="mt-4 flex w-fit items-center gap-1.5 text-xs font-semibold sm:mt-5 sm:gap-2 sm:text-sm text-gray-900 transition-colors hover:text-[#00ff03]"
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/product/${product._id}`
+                    )
+                  }
+                  className="mt-4 flex w-fit cursor-pointer items-center gap-1.5 text-xs font-semibold text-gray-900 transition-colors hover:text-[#00ff03] sm:mt-5 sm:gap-2 sm:text-sm"
                 >
                   View Product
                   <ArrowRight size={16} />
-                </a>
+                </button>
+
               </div>
             </div>
           );
@@ -479,14 +584,18 @@ const LatestProducts = () => {
       {/* ============================= */}
 
       <div className="mt-8 flex justify-center sm:hidden">
-        <a
-          href="/products"
-          className="flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-[#76B900]"
+        <button
+          type="button"
+          onClick={() =>
+            navigate("/products")
+          }
+          className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-gray-900 hover:text-[#76B900]"
         >
           View All Products
           <ArrowRight size={18} />
-        </a>
+        </button>
       </div>
+
     </section>
   );
 };

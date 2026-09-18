@@ -13,6 +13,9 @@ import Orders from './Components/Orders/Orders'
 import ProductDetail from './Pages/ProductDetail/ProductDetail'
 import Contact from './Pages/Contact/Contact'
 import Profile from './Pages/Profile/Profile'
+import ForgotPassword from './Pages/ForgotPassword/ForgotPassword'
+import ForgotPasswordOTP from './Pages/ForgotPasswordOTP/ForgotPasswordOTP'
+import ResetPassword from './Pages/ResetPassword/ResetPassword'
 
 function App() {
 
@@ -86,6 +89,21 @@ function App() {
       <Route
       path='/profile'
       element={<Profile/>}
+      />
+
+      <Route
+      path='/forgot-password'
+      element={<ForgotPassword/>}
+      />
+
+      <Route
+      path='/forgot-password/otp'
+      element={<ForgotPasswordOTP/>}
+      />
+
+      <Route
+      path='/reset-password'
+      element={<ResetPassword/>}
       />
     </Routes>
     </>
