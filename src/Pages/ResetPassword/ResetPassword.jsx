@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -13,13 +13,10 @@ const ResetPassword = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
-
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const userId = sessionStorage.getItem("forgotPasswordUserId");
-
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -29,28 +26,21 @@ const ResetPassword = () => {
     }));
   };
 
+  // Handle password reset
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { newpassword, confirmPassword } = formData;
-
-    if (!newpassword || !confirmPassword) {
-      toast.error("Please fill all fields");
-      return;
-    }
-
-    if (newpassword !== confirmPassword) {
+    // Check password match
+    if (formData.newpassword !== formData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    if (newpassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+    // Get userId saved during forgot password flow
+    const userId = localStorage.getItem("forgotPasswordUserId");
 
     if (!userId) {
-      toast.error("Password reset session expired");
+      toast.error("Session expired. Please try again.");
       navigate("/forgot-password");
       return;
     }
@@ -62,16 +52,18 @@ const ResetPassword = () => {
         `${import.meta.env.VITE_API_URL}/api/user/reset-password`,
         {
           userId,
-          newpassword,
+          newpassword: formData.newpassword,
         }
       );
 
       toast.success(response.data.message);
 
-      // Clear forgot password data
-      sessionStorage.removeItem("forgotPasswordUserId");
+      // Remove temporary forgot password data
+      localStorage.removeItem("forgotPasswordUserId");
 
+      // Go to login
       navigate("/login");
+
     } catch (error) {
       console.error("Reset password error:", error);
 
@@ -85,48 +77,70 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[#F3F7EF] flex items-center justify-center px-4 py-10 font-['Helvetica',_Arial,_sans-serif]">
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+      {/* Main Card */}
+      <div className="w-full max-w-[420px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.07)] px-6 py-8 sm:px-9 sm:py-10">
+
+        {/* Logo */}
+        <div className="flex justify-center items-center mb-7">
+          <Link to="/">
+            <img
+              src="/OstikLogo/OSTIK_PNG.png"
+              alt="OSTIK"
+              className="w-[120px] h-auto object-contain"
+            />
+          </Link>
+        </div>
+
+        {/* Heading */}
+        <div className="text-center mb-7">
+          <h1 className="text-[26px] sm:text-[28px] font-bold text-[#222]">
             Reset Password
           </h1>
 
-          <p className="mt-2 text-gray-500 text-sm">
-            Create a new password for your account
+          <p className="mt-2 text-[14px] text-gray-500">
+            Create a new password for your Ostik account.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+        >
 
           {/* New Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password
+            <label
+              htmlFor="newpassword"
+              className="block mb-2 text-[14px] font-semibold text-gray-700"
+            >
+              New password
             </label>
 
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"}
+                id="newpassword"
                 name="newpassword"
+                type={showPassword ? "text" : "password"}
                 value={formData.newpassword}
                 onChange={handleChange}
                 placeholder="Enter new password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-12 outline-none focus:border-[#76b900]"
+                required
+                className="w-full h-[48px] px-4 pr-12 rounded-lg border border-gray-200 bg-white text-[15px] text-gray-800 outline-none transition-all duration-300 focus:border-[#00ff03] focus:ring-2 focus:ring-[#76B900]/10 placeholder:text-gray-400"
               />
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowPassword((prev) => !prev)
-                }
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#76B900] transition-colors"
+                aria-label="Toggle password visibility"
               >
                 {showPassword ? (
-                  <EyeOff size={20} />
+                  <EyeOff size={19} />
                 ) : (
-                  <Eye size={20} />
+                  <Eye size={19} />
                 )}
               </button>
             </div>
@@ -134,48 +148,73 @@ const ResetPassword = () => {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
+            <label
+              htmlFor="confirmPassword"
+              className="block mb-2 text-[14px] font-semibold text-gray-700"
+            >
+              Confirm password
             </label>
 
             <div className="relative">
               <input
-                type={
-                  showConfirmPassword ? "text" : "password"
-                }
+                id="confirmPassword"
                 name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="Confirm new password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-12 outline-none focus:border-[#76b900]"
+                required
+                className="w-full h-[48px] px-4 pr-12 rounded-lg border border-gray-200 bg-white text-[15px] text-gray-800 outline-none transition-all duration-300 focus:border-[#00ff03] focus:ring-2 focus:ring-[#76B900]/10 placeholder:text-gray-400"
               />
 
               <button
                 type="button"
                 onClick={() =>
-                  setShowConfirmPassword((prev) => !prev)
+                  setShowConfirmPassword(!showConfirmPassword)
                 }
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#76B900] transition-colors"
+                aria-label="Toggle password visibility"
               >
                 {showConfirmPassword ? (
-                  <EyeOff size={20} />
+                  <EyeOff size={19} />
                 ) : (
-                  <Eye size={20} />
+                  <Eye size={19} />
                 )}
               </button>
             </div>
           </div>
 
+          {/* Reset Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#76b900] text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#65a300] transition disabled:opacity-60"
+            className="group w-full h-[48px] rounded-lg bg-[#00ff03] text-white font-semibold text-[15px] flex items-center justify-center gap-2 transition-all duration-300 hover:bg-[#00e603] hover:shadow-[0_6px_18px_rgba(118,185,0,0.25)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? "Resetting..." : "Reset Password"}
-            {!loading && <ArrowRight size={18} />}
+            {loading ? (
+              "Resetting..."
+            ) : (
+              <>
+                Reset Password
+
+                <ArrowRight
+                  size={18}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                />
+              </>
+            )}
           </button>
 
         </form>
+
+        {/* Back to Login */}
+        <div className="mt-7 pt-6 border-t border-gray-100 text-center">
+          <Link
+            to="/login"
+            className="text-[14px] font-semibold text-gray-600 hover:text-[#00e603] transition-colors"
+          >
+            Back to Login
+          </Link>
+        </div>
 
       </div>
     </div>

@@ -130,7 +130,7 @@ const Wishlist = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#F3F7EF] text-gray-900">
       <Navbar />
 
       {/* PAGE HEADER */}

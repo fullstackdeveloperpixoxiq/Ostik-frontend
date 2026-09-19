@@ -491,7 +491,7 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-10">
+      <div className="min-h-screen bg-[#F3F7EF] px-4 py-10 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl animate-pulse">
 
           <div className="mb-8 h-5 w-64 rounded bg-gray-200" />
@@ -566,7 +566,7 @@ const ProductDetail = () => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-white text-gray-900">
+      <div className="min-h-screen bg-[#F3F7EF] text-gray-900">
 
         {/* =====================================================
             BREADCRUMB

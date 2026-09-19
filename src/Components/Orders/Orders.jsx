@@ -557,7 +557,7 @@ const Orders = () => {
       <>
         <Navbar />
 
-        <div className="min-h-screen bg-[#f8f9f7]">
+        <div className="min-h-screen bg-[#F3F7EF][#f8f9f7]">
           <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
             <div className="flex min-h-[50vh] items-center justify-center">
               <div className="flex flex-col items-center gap-4">

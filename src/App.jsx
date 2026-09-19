@@ -97,7 +97,7 @@ function App() {
       />
 
       <Route
-      path='/forgot-password/otp'
+      path='/forgot-password-otp'
       element={<ForgotPasswordOTP/>}
       />
 

@@ -603,7 +603,7 @@ const Checkout = () => {
   if (loading) {
 
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F3F7EF] flex items-center justify-center">
 
         <div className="text-center">
 

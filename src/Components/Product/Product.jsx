@@ -701,7 +701,7 @@ const Products = () => {
     <>
       <Navbar />
 
-      <section className="min-h-screen bg-white">
+      <section className="min-h-screen bg-[#F3F7EF]">
 
         {/* =====================================================
             COLLECTION HEADER

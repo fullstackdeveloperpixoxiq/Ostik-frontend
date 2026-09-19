@@ -127,7 +127,7 @@ const Contact = () => {
   return (
     <>
     <Navbar/>
-    <main className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-[#F3F7EF] text-gray-900">
 
       {/* =====================================================
           HERO
