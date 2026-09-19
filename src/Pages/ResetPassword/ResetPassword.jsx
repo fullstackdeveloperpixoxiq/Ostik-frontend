@@ -77,7 +77,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F7EF] flex items-center justify-center px-4 py-10 font-['Helvetica',_Arial,_sans-serif]">
+    <div className="min-h-screen bg-[#F8F9F6] flex items-center justify-center px-4 py-10 font-['Helvetica',_Arial,_sans-serif]">
 
       {/* Main Card */}
       <div className="w-full max-w-[420px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.07)] px-6 py-8 sm:px-9 sm:py-10">

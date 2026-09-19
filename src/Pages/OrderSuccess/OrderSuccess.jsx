@@ -153,7 +153,7 @@ const OrderSuccess = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F3F7EF] flex items-center justify-center px-5">
+      <div className="min-h-screen bg-[#F8F9F6] flex items-center justify-center px-5">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mx-auto mb-5"></div>
 
@@ -171,7 +171,7 @@ const OrderSuccess = () => {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-[#F3F7EF] flex items-center justify-center px-5">
+      <div className="min-h-screen bg-[#F8F9F6] flex items-center justify-center px-5">
         <div className="text-center max-w-md">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-5">
             <Package size={28} className="text-gray-500" />

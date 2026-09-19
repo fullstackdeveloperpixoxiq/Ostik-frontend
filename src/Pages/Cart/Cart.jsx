@@ -194,7 +194,7 @@ const Cart = () => {
   // LOADING
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F3F7EF]">
+      <div className="min-h-screen bg-[#F8F9F6]">
         <div className="mx-auto flex min-h-[70vh] max-w-7xl items-center justify-center px-6">
           <div className="flex flex-col items-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-green-600" />
@@ -211,7 +211,7 @@ const Cart = () => {
   // EMPTY CART
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F3F7EF] text-gray-900">
+      <div className="min-h-screen bg-[#F8F9F6] text-gray-900">
         <main className="mx-auto flex min-h-[75vh] max-w-7xl items-center justify-center px-6 py-16">
           <div className="flex max-w-md flex-col items-center text-center">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-green-50">
@@ -245,7 +245,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F3F7EF] text-gray-900">
+    <div className="min-h-screen bg-[#F8F9F6] text-gray-900">
       {/* HEADER */}
       <section className="border-b border-gray-100 bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12">

@@ -24,7 +24,7 @@ const Footer = () => {
 
 
   return (
-    <footer className="bg-white text-gray-800">
+    <footer className="bg-[#F3F7EF] text-gray-800">
 
       {/* ================= NEWSLETTER ================= */}
 
