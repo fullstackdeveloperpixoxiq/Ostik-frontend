@@ -1,19 +1,22 @@
+import { useState } from "react";
 import {
   ArrowUp,
   Mail,
   MapPin,
   Phone,
 } from "lucide-react";
-
 import {
   FaFacebookF,
   FaInstagram,
   FaYoutube,
   FaTwitter,
 } from "react-icons/fa";
-
+import axios from "axios";
+import { toast } from "sonner";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -22,6 +25,48 @@ const Footer = () => {
     });
   };
 
+  // ================= NEWSLETTER =================
+
+  const handleSubscribe = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/newsletter/subscribe`,
+        {
+          email: email.trim(),
+        }
+      );
+
+      // Show backend success message
+      toast.success(response.data.message);
+
+      // Clear input
+      setEmail("");
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+
+      // Show backend error message
+      toast.error(
+        error.response?.data?.message ||
+          "Something went wrong. Please try again"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Subscribe when pressing Enter
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSubscribe();
+    }
+  };
 
   return (
     <footer className="bg-[#F3F7EF] text-gray-800">
@@ -58,15 +103,20 @@ const Footer = () => {
 
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Enter your email"
               className="min-w-0 flex-1 rounded-l-lg border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#00e603]"
             />
 
             <button
               type="button"
-              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#649f00]"
+              onClick={handleSubscribe}
+              disabled={loading}
+              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#649f00] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Subscribe
+              {loading ? "Subscribing..." : "Subscribe"}
             </button>
 
           </div>
@@ -91,8 +141,11 @@ const Footer = () => {
 
             <div className="mb-5">
 
-              <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-              className="w-[130px] h-auto object-contain sm:w-[150px]"/>
+              <img
+                src="\OstikLogo\OSTIK_PNG.png"
+                alt="LOGO"
+                className="h-auto w-[130px] object-contain sm:w-[150px]"
+              />
 
             </div>
 
