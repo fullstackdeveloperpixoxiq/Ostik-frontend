@@ -24,6 +24,11 @@ const Checkout = () => {
   const [updatingVariantId, setUpdatingVariantId] = useState(null);
 
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [savedAddresses, setSavedAddresses] = useState([]);
+
+  // Selected previous address
+  const [selectedAddressIndex, setSelectedAddressIndex] =
+    useState(null);
 
   const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
@@ -68,23 +73,80 @@ const Checkout = () => {
       }
 
       setCartItems(items);
-
     } catch (error) {
       console.log("Fetch checkout cart error:", error);
 
       toast.error(
         error.response?.data?.message ||
-        "Failed to load cart"
+          "Failed to load cart"
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // -----------------------------------------
+  // FETCH PREVIOUS ORDER ADDRESSES
+  // -----------------------------------------
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/order/addresses`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const addresses =
+        response.data?.addresses || [];
+
+      // Show only the two most recent unique addresses
+      setSavedAddresses(addresses.slice(0, 2));
+    } catch (error) {
+      console.log(
+        "Fetch saved addresses error:",
+        error
+      );
+    }
+  };
+
+  // -----------------------------------------
+  // FETCH DATA
+  // -----------------------------------------
+
   useEffect(() => {
     fetchCart();
+    fetchSavedAddresses();
   }, []);
 
+  // -----------------------------------------
+  // HANDLE SAVED ADDRESS SELECT
+  // -----------------------------------------
+
+  const handleSavedAddressSelect = (
+    address,
+    index
+  ) => {
+    setSelectedAddressIndex(index);
+
+    setShippingAddress({
+      fullName: address.fullName || "",
+      phone: address.phone || "",
+      address: address.address || "",
+      city: address.city || "",
+      state: address.state || "",
+      pincode: address.pincode || "",
+    });
+
+    toast.success("Address selected");
+  };
 
   // -----------------------------------------
   // HANDLE ADDRESS CHANGE
@@ -93,12 +155,15 @@ const Checkout = () => {
   const handleAddressChange = (event) => {
     const { name, value } = event.target;
 
+    // If user manually changes the form,
+    // remove the selected saved address highlight.
+    setSelectedAddressIndex(null);
+
     setShippingAddress((previous) => ({
       ...previous,
       [name]: value,
     }));
   };
-
 
   // -----------------------------------------
   // PRICE CALCULATION
@@ -110,6 +175,7 @@ const Checkout = () => {
     }
 
     const price = Number(variant.price) || 0;
+
     const discountPercent =
       Number(variant.discountPercent) || 0;
 
@@ -120,41 +186,52 @@ const Checkout = () => {
     return Math.round(discountedPrice);
   };
 
-
   const getOriginalPrice = (variant) => {
     if (!variant) {
       return 0;
     }
 
-    return Math.round(Number(variant.price) || 0);
+    return Math.round(
+      Number(variant.price) || 0
+    );
   };
 
+  const subtotal = cartItems.reduce(
+    (total, item) => {
+      const price = getFinalPrice(
+        item.variant
+      );
 
-  const subtotal = cartItems.reduce((total, item) => {
-    const price = getFinalPrice(item.variant);
+      return (
+        total +
+        price * item.quantity
+      );
+    },
+    0
+  );
 
-    return total + price * item.quantity;
-  }, 0);
+  const originalTotal = cartItems.reduce(
+    (total, item) => {
+      const price = getOriginalPrice(
+        item.variant
+      );
 
-
-  const originalTotal = cartItems.reduce((total, item) => {
-    const price = getOriginalPrice(item.variant);
-
-    return total + price * item.quantity;
-  }, 0);
-
+      return (
+        total +
+        price * item.quantity
+      );
+    },
+    0
+  );
 
   const totalDiscount =
     originalTotal - subtotal;
 
-
   const shippingFee =
     subtotal >= 2000 ? 0 : 99;
 
-
   const grandTotal =
     subtotal + shippingFee;
-
 
   // -----------------------------------------
   // UPDATE CART QUANTITY
@@ -165,7 +242,6 @@ const Checkout = () => {
     currentQuantity,
     change
   ) => {
-
     const newQuantity =
       currentQuantity + change;
 
@@ -174,7 +250,6 @@ const Checkout = () => {
     }
 
     try {
-
       setUpdatingVariantId(variantId);
 
       const token =
@@ -196,9 +271,7 @@ const Checkout = () => {
         response.data?.cart?.items || [];
 
       setCartItems(updatedItems);
-
     } catch (error) {
-
       console.log(
         "Update checkout cart error:",
         error
@@ -206,22 +279,18 @@ const Checkout = () => {
 
       toast.error(
         error.response?.data?.message ||
-        "Failed to update quantity"
+          "Failed to update quantity"
       );
-
     } finally {
-
       setUpdatingVariantId(null);
     }
   };
-
 
   // -----------------------------------------
   // VALIDATE ADDRESS
   // -----------------------------------------
 
   const validateAddress = () => {
-
     const {
       fullName,
       phone,
@@ -231,52 +300,57 @@ const Checkout = () => {
       pincode,
     } = shippingAddress;
 
-
     if (!fullName.trim()) {
-      toast.error("Please enter your full name");
+      toast.error(
+        "Please enter your full name"
+      );
       return false;
     }
-
 
     if (!phone.trim()) {
-      toast.error("Please enter your phone number");
+      toast.error(
+        "Please enter your phone number"
+      );
       return false;
     }
-
 
     if (!/^[6-9]\d{9}$/.test(phone)) {
-      toast.error("Please enter a valid 10-digit phone number");
+      toast.error(
+        "Please enter a valid 10-digit phone number"
+      );
       return false;
     }
-
 
     if (!address.trim()) {
-      toast.error("Please enter your address");
+      toast.error(
+        "Please enter your address"
+      );
       return false;
     }
-
 
     if (!city.trim()) {
-      toast.error("Please enter your city");
+      toast.error(
+        "Please enter your city"
+      );
       return false;
     }
-
 
     if (!state.trim()) {
-      toast.error("Please enter your state");
+      toast.error(
+        "Please enter your state"
+      );
       return false;
     }
-
 
     if (!/^\d{6}$/.test(pincode)) {
-      toast.error("Please enter a valid 6-digit pincode");
+      toast.error(
+        "Please enter a valid 6-digit pincode"
+      );
       return false;
     }
-
 
     return true;
   };
-
 
   // -----------------------------------------
   // LOAD RAZORPAY SCRIPT
@@ -284,7 +358,6 @@ const Checkout = () => {
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
-
       const existingScript =
         document.querySelector(
           'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
@@ -294,7 +367,6 @@ const Checkout = () => {
         resolve(true);
         return;
       }
-
 
       const script =
         document.createElement("script");
@@ -314,15 +386,14 @@ const Checkout = () => {
     });
   };
 
-
   // -----------------------------------------
   // HANDLE RAZORPAY PAYMENT
   // -----------------------------------------
 
-  const openRazorpayCheckout = async (order) => {
-
+  const openRazorpayCheckout = async (
+    order
+  ) => {
     try {
-
       const scriptLoaded =
         await loadRazorpayScript();
 
@@ -335,12 +406,9 @@ const Checkout = () => {
         return;
       }
 
-
       const token =
         localStorage.getItem("token");
 
-
-      // Create Razorpay order
       const paymentResponse =
         await axios.post(
           `${import.meta.env.VITE_API_URL}/api/payment/create`,
@@ -354,10 +422,8 @@ const Checkout = () => {
           }
         );
 
-
       const payment =
         paymentResponse.data?.payment;
-
 
       if (!payment) {
         throw new Error(
@@ -365,9 +431,7 @@ const Checkout = () => {
         );
       }
 
-
       const options = {
-
         key:
           import.meta.env.VITE_RAZORPAY_KEY_ID,
 
@@ -385,11 +449,10 @@ const Checkout = () => {
         order_id:
           payment.razorpayOrderId,
 
-
-        handler: async function (response) {
-
+        handler: async function (
+          response
+        ) {
           try {
-
             const verifyResponse =
               await axios.post(
                 `${import.meta.env.VITE_API_URL}/api/payment/verify`,
@@ -411,23 +474,18 @@ const Checkout = () => {
                 }
               );
 
-
             if (
               verifyResponse.status === 200
             ) {
-
               toast.success(
                 "Payment successful! Your order has been placed."
               );
-
 
               navigate(
                 `/order-success/${order._id}`
               );
             }
-
           } catch (error) {
-
             console.log(
               "Payment verification error:",
               error
@@ -435,16 +493,14 @@ const Checkout = () => {
 
             toast.error(
               error.response?.data?.message ||
-              "Payment verification failed"
+                "Payment verification failed"
             );
 
             setPlacingOrder(false);
           }
         },
 
-
         prefill: {
-
           name:
             shippingAddress.fullName,
 
@@ -452,21 +508,16 @@ const Checkout = () => {
             shippingAddress.phone,
         },
 
-
         notes: {
-          orderId:
-            order._id,
+          orderId: order._id,
         },
-
 
         theme: {
           color: "#111827",
         },
 
-
         modal: {
           ondismiss: function () {
-
             setPlacingOrder(false);
 
             toast.info(
@@ -476,16 +527,11 @@ const Checkout = () => {
         },
       };
 
-
       const razorpay =
         new window.Razorpay(options);
 
-
       razorpay.open();
-
-
     } catch (error) {
-
       console.log(
         "Razorpay error:",
         error
@@ -493,40 +539,33 @@ const Checkout = () => {
 
       toast.error(
         error.response?.data?.message ||
-        "Unable to start payment"
+          "Unable to start payment"
       );
 
       setPlacingOrder(false);
     }
   };
 
-
   // -----------------------------------------
   // PLACE ORDER
   // -----------------------------------------
 
   const handlePlaceOrder = async () => {
-
     if (!validateAddress()) {
       return;
     }
-
 
     if (cartItems.length === 0) {
       toast.error("Your cart is empty");
       return;
     }
 
-
     try {
-
       setPlacingOrder(true);
 
       const token =
         localStorage.getItem("token");
 
-
-      // Create order
       const response =
         await axios.post(
           `${import.meta.env.VITE_API_URL}/api/order`,
@@ -542,10 +581,8 @@ const Checkout = () => {
           }
         );
 
-
       const order =
         response.data?.order;
-
 
       if (!order) {
         throw new Error(
@@ -553,17 +590,14 @@ const Checkout = () => {
         );
       }
 
-
       // -------------------------------------
       // COD
       // -------------------------------------
 
       if (paymentMethod === "cod") {
-
         toast.success(
           "Order placed successfully!"
         );
-
 
         navigate(
           `/order-success/${order._id}`
@@ -572,15 +606,12 @@ const Checkout = () => {
         return;
       }
 
-
       // -------------------------------------
       // RAZORPAY
       // -------------------------------------
 
       await openRazorpayCheckout(order);
-
     } catch (error) {
-
       console.log(
         "Place order error:",
         error
@@ -588,40 +619,32 @@ const Checkout = () => {
 
       toast.error(
         error.response?.data?.message ||
-        "Failed to place order"
+          "Failed to place order"
       );
 
       setPlacingOrder(false);
     }
   };
 
-
   // -----------------------------------------
   // LOADING
   // -----------------------------------------
 
   if (loading) {
-
     return (
       <div className="min-h-screen bg-[#F8F9F6] flex items-center justify-center">
-
         <div className="text-center">
-
           <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
 
           <p className="text-gray-500 text-sm">
             Loading checkout...
           </p>
-
         </div>
-
       </div>
     );
   }
 
-
   return (
-
     <div className="min-h-screen bg-gray-50">
 
       {/* ---------------------------------- */}
@@ -629,49 +652,41 @@ const Checkout = () => {
       {/* ---------------------------------- */}
 
       <header className="bg-white border-b border-gray-200">
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
           <div className="h-16 sm:h-20 flex items-center justify-between">
 
             <button
-              onClick={() => navigate("/cart")}
+              onClick={() =>
+                navigate("/cart")
+              }
               className="flex items-center gap-2 text-sm text-gray-600 hover:text-black transition"
             >
-
               <ArrowLeft size={18} />
 
               <span>
                 Back to Cart
               </span>
-
             </button>
 
-
             <div className="shrink-0 px-2 sm:px-6 flex items-center justify-center">
-
-              <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
-              className="w-[150px] h-auto object-contain sm:w-[150px]"/>
-
+              <img
+                src="\OstikLogo\OSTIK_PNG.png"
+                alt="LOGO"
+                className="w-[150px] h-auto object-contain sm:w-[150px]"
+              />
             </div>
 
-
             <div className="hidden sm:flex items-center gap-2 text-gray-500">
-
               <LockKeyhole size={16} />
 
               <span className="text-xs">
                 Secure Checkout
               </span>
-
             </div>
 
           </div>
-
         </div>
-
       </header>
-
 
       {/* ---------------------------------- */}
       {/* CHECKOUT CONTENT */}
@@ -682,7 +697,6 @@ const Checkout = () => {
         {/* TITLE */}
 
         <div className="mb-8">
-
           <p className="text-sm font-medium text-[#00ff03] mb-2">
             OSTIK CHECKOUT
           </p>
@@ -694,9 +708,7 @@ const Checkout = () => {
           <p className="mt-2 text-sm sm:text-base text-gray-500">
             Enter your delivery details and choose your payment method.
           </p>
-
         </div>
-
 
         {/* -------------------------------- */}
         {/* MAIN GRID */}
@@ -704,13 +716,11 @@ const Checkout = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-
           {/* ================================ */}
           {/* LEFT SIDE */}
           {/* ================================ */}
 
           <div className="lg:col-span-7 space-y-6">
-
 
             {/* ------------------------------ */}
             {/* SHIPPING ADDRESS */}
@@ -721,17 +731,13 @@ const Checkout = () => {
               <div className="flex items-start gap-3 mb-5 sm:mb-6">
 
                 <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-
                   <MapPin
                     size={20}
                     className="text-[#00ff03]"
                   />
-
                 </div>
 
-
                 <div>
-
                   <h2 className="text-lg font-semibold text-gray-900">
                     Delivery address
                   </h2>
@@ -739,14 +745,124 @@ const Checkout = () => {
                   <p className="text-sm text-gray-500 mt-1">
                     Where should we deliver your order?
                   </p>
-
                 </div>
 
               </div>
 
+              {/* -------------------------------- */}
+              {/* PREVIOUS ORDER ADDRESSES */}
+              {/* -------------------------------- */}
+
+              {savedAddresses.length > 0 && (
+                <div className="mb-6">
+
+                  <p className="text-sm font-semibold text-gray-800 mb-3">
+                    Previous delivery addresses
+                  </p>
+
+                  <div className="space-y-3">
+
+                    {savedAddresses.map(
+                      (address, index) => {
+
+                        const isSelected =
+                          selectedAddressIndex ===
+                          index;
+
+                        return (
+                          <button
+                            type="button"
+                            key={`${address.address}-${address.pincode}-${index}`}
+                            onClick={() =>
+                              handleSavedAddressSelect(
+                                address,
+                                index
+                              )
+                            }
+                            className={`w-full text-left rounded-xl border p-4 transition ${
+                              isSelected
+                                ? "border-[#00ff03] bg-green-50 ring-1 ring-[#00ff03]"
+                                : "border-gray-200 bg-gray-50 hover:border-gray-400 hover:bg-white"
+                            }`}
+                          >
+
+                            <div className="flex items-start gap-3">
+
+                              {/* RADIO / SELECT ICON */}
+
+                              <div
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                                  isSelected
+                                    ? "bg-[#00ff03] text-black"
+                                    : "bg-white text-gray-500"
+                                }`}
+                              >
+                                {isSelected ? (
+                                  <CheckCircle2
+                                    size={18}
+                                  />
+                                ) : (
+                                  <MapPin
+                                    size={17}
+                                  />
+                                )}
+                              </div>
+
+                              {/* ADDRESS DETAILS */}
+
+                              <div className="min-w-0 flex-1">
+
+                                <div className="flex items-start justify-between gap-3">
+
+                                  <p className="text-sm font-semibold text-gray-900">
+                                    {address.fullName}
+                                  </p>
+
+                                  {isSelected && (
+                                    <span className="text-xs font-semibold text-green-700 shrink-0">
+                                      Selected
+                                    </span>
+                                  )}
+
+                                </div>
+
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {address.address}
+                                </p>
+
+                                <p className="text-sm text-gray-600">
+                                  {address.city},{" "}
+                                  {address.state} -{" "}
+                                  {address.pincode}
+                                </p>
+
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {address.phone}
+                                </p>
+
+                              </div>
+
+                            </div>
+
+                          </button>
+                        );
+                      }
+                    )}
+
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-2">
+                    Select a previous address to automatically fill the form below.
+                  </p>
+
+                </div>
+              )}
+
+              {/* -------------------------------- */}
+              {/* EXISTING ADDRESS FORM */}
+              {/* -------------------------------- */}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
 
                 {/* FULL NAME */}
 
@@ -759,14 +875,17 @@ const Checkout = () => {
                   <input
                     type="text"
                     name="fullName"
-                    value={shippingAddress.fullName}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.fullName
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="Enter your full name"
                     className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
-
 
                 {/* PHONE */}
 
@@ -779,15 +898,18 @@ const Checkout = () => {
                   <input
                     type="tel"
                     name="phone"
-                    value={shippingAddress.phone}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.phone
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="10-digit mobile number"
                     maxLength={10}
                     className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
-
 
                 {/* PINCODE */}
 
@@ -800,15 +922,18 @@ const Checkout = () => {
                   <input
                     type="text"
                     name="pincode"
-                    value={shippingAddress.pincode}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.pincode
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="6-digit pincode"
                     maxLength={6}
                     className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
-
 
                 {/* ADDRESS */}
 
@@ -820,15 +945,18 @@ const Checkout = () => {
 
                   <textarea
                     name="address"
-                    value={shippingAddress.address}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.address
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="House / Flat / Street / Area"
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none resize-none focus:border-black focus:ring-1 focus:ring-black transition"
                   />
 
                 </div>
-
 
                 {/* CITY */}
 
@@ -841,14 +969,17 @@ const Checkout = () => {
                   <input
                     type="text"
                     name="city"
-                    value={shippingAddress.city}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.city
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="City"
                     className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
 
                 </div>
-
 
                 {/* STATE */}
 
@@ -861,8 +992,12 @@ const Checkout = () => {
                   <input
                     type="text"
                     name="state"
-                    value={shippingAddress.state}
-                    onChange={handleAddressChange}
+                    value={
+                      shippingAddress.state
+                    }
+                    onChange={
+                      handleAddressChange
+                    }
                     placeholder="State"
                     className="w-full h-12 px-4 rounded-xl border border-gray-300 outline-none focus:border-[#00ff03] focus:ring-1 focus:ring-[#00ff03] transition"
                   />
@@ -873,7 +1008,6 @@ const Checkout = () => {
 
             </section>
 
-
             {/* ------------------------------ */}
             {/* PAYMENT METHOD */}
             {/* ------------------------------ */}
@@ -883,14 +1017,11 @@ const Checkout = () => {
               <div className="flex items-start gap-3 mb-5 sm:mb-6">
 
                 <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-
                   <CreditCard
                     size={20}
                     className="text-gray-700"
                   />
-
                 </div>
-
 
                 <div>
 
@@ -906,15 +1037,14 @@ const Checkout = () => {
 
               </div>
 
-
               <div className="space-y-3">
-
 
                 {/* RAZORPAY */}
 
                 <label
                   className={`block border rounded-2xl p-4 cursor-pointer transition ${
-                    paymentMethod === "razorpay"
+                    paymentMethod ===
+                    "razorpay"
                       ? "border-black bg-gray-50"
                       : "border-gray-200 hover:border-gray-400"
                   }`}
@@ -927,7 +1057,8 @@ const Checkout = () => {
                       name="paymentMethod"
                       value="razorpay"
                       checked={
-                        paymentMethod === "razorpay"
+                        paymentMethod ===
+                        "razorpay"
                       }
                       onChange={(event) =>
                         setPaymentMethod(
@@ -936,7 +1067,6 @@ const Checkout = () => {
                       }
                       className="w-4 h-4 accent-black"
                     />
-
 
                     <div className="flex-1">
 
@@ -954,7 +1084,6 @@ const Checkout = () => {
 
                         </div>
 
-
                         <span className="text-xs font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full">
                           Recommended
                         </span>
@@ -967,12 +1096,12 @@ const Checkout = () => {
 
                 </label>
 
-
                 {/* COD */}
 
                 <label
                   className={`block border rounded-2xl p-4 cursor-pointer transition ${
-                    paymentMethod === "cod"
+                    paymentMethod ===
+                    "cod"
                       ? "border-black bg-gray-50"
                       : "border-gray-200 hover:border-gray-400"
                   }`}
@@ -985,7 +1114,8 @@ const Checkout = () => {
                       name="paymentMethod"
                       value="cod"
                       checked={
-                        paymentMethod === "cod"
+                        paymentMethod ===
+                        "cod"
                       }
                       onChange={(event) =>
                         setPaymentMethod(
@@ -994,7 +1124,6 @@ const Checkout = () => {
                       }
                       className="w-4 h-4 accent-black"
                     />
-
 
                     <div>
 
@@ -1015,7 +1144,6 @@ const Checkout = () => {
               </div>
 
             </section>
-
 
             {/* ------------------------------ */}
             {/* SECURITY FEATURES */}
@@ -1044,7 +1172,6 @@ const Checkout = () => {
 
               </div>
 
-
               <div className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
 
                 <Truck
@@ -1065,7 +1192,6 @@ const Checkout = () => {
                 </div>
 
               </div>
-
 
               <div className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
 
@@ -1092,16 +1218,13 @@ const Checkout = () => {
 
           </div>
 
-
           {/* ================================ */}
           {/* RIGHT SIDE */}
           {/* ================================ */}
 
           <div className="lg:col-span-5">
 
-
             <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden lg:sticky lg:top-6">
-
 
               {/* ORDER SUMMARY HEADER */}
 
@@ -1124,7 +1247,6 @@ const Checkout = () => {
 
                   </div>
 
-
                   <ShoppingBag
                     size={20}
                     className="text-gray-400"
@@ -1134,180 +1256,187 @@ const Checkout = () => {
 
               </div>
 
-
               {/* CART ITEMS */}
 
               <div className="p-5 sm:p-6 max-h-[420px] overflow-y-auto">
 
                 <div className="space-y-5">
 
-                  {cartItems.map((item) => {
+                  {cartItems.map(
+                    (item) => {
 
-                    const variant =
-                      item.variant;
+                      const variant =
+                        item.variant;
 
-                    const product =
-                      item.product;
+                      const product =
+                        item.product;
 
-                    const finalPrice =
-                      getFinalPrice(
-                        variant
-                      );
+                      const finalPrice =
+                        getFinalPrice(
+                          variant
+                        );
 
-                    const originalPrice =
-                      getOriginalPrice(
-                        variant
-                      );
+                      const originalPrice =
+                        getOriginalPrice(
+                          variant
+                        );
 
+                      return (
+                        <div
+                          key={
+                            variant?._id
+                          }
+                          className="flex gap-4"
+                        >
 
-                    return (
+                          {/* IMAGE */}
 
-                      <div
-                        key={variant?._id}
-                        className="flex gap-4"
-                      >
+                          <div className="relative w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
 
-                        {/* IMAGE */}
-
-                        <div className="relative w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
-
-                          <img
-                            src={
-                              variant?.images?.[0] ||
-                              product?.images?.[0] ||
-                              ""
-                            }
-                            alt={
-                              product?.name ||
-                              "Product"
-                            }
-                            className="w-full h-full object-contain"
-                          />
-
-                          <span className="absolute -top-1 -right-1 min-w-6 h-6 px-1 rounded-full bg-black text-white text-xs flex items-center justify-center">
-                            {item.quantity}
-                          </span>
-
-                        </div>
-
-
-                        {/* DETAILS */}
-
-                        <div className="flex-1 min-w-0">
-
-                          <div className="flex justify-between gap-3">
-
-                            <div className="min-w-0">
-
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                {product?.name}
-                              </h3>
-
-                              {variant?.name && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {variant.name}
-                                </p>
-                              )}
-
-                            </div>
-
-
-                            <div className="text-right shrink-0">
-
-                              <p className="text-sm font-semibold text-gray-900">
-                                ₹
-                                {(
-                                  finalPrice *
-                                  item.quantity
-                                ).toLocaleString("en-IN")}
-                              </p>
-
-                              {originalPrice >
-                                finalPrice && (
-                                <p className="text-xs text-gray-400 line-through">
-                                  ₹
-                                  {(
-                                    originalPrice *
-                                    item.quantity
-                                  ).toLocaleString("en-IN")}
-                                </p>
-                              )}
-
-                            </div>
-
-                          </div>
-
-
-                          {/* QUANTITY */}
-
-                          <div className="flex items-center gap-2 mt-3">
-
-                            <button
-                              type="button"
-                              disabled={
-                                updatingVariantId ===
-                                variant?._id
+                            <img
+                              src={
+                                variant
+                                  ?.images?.[0] ||
+                                product
+                                  ?.images?.[0] ||
+                                ""
                               }
-                              onClick={() =>
-                                handleQuantityChange(
-                                  variant?._id,
-                                  item.quantity,
-                                  -1
-                                )
+                              alt={
+                                product?.name ||
+                                "Product"
                               }
-                              className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
-                            >
+                              className="w-full h-full object-contain"
+                            />
 
-                              <Minus size={13} />
-
-                            </button>
-
-
-                            <span className="text-sm font-medium w-5 text-center">
-                              {item.quantity}
+                            <span className="absolute -top-1 -right-1 min-w-6 h-6 px-1 rounded-full bg-black text-white text-xs flex items-center justify-center">
+                              {
+                                item.quantity
+                              }
                             </span>
 
+                          </div>
 
-                            <button
-                              type="button"
-                              disabled={
-                                updatingVariantId ===
-                                variant?._id
-                              }
-                              onClick={() =>
-                                handleQuantityChange(
-                                  variant?._id,
-                                  item.quantity,
-                                  1
-                                )
-                              }
-                              className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
-                            >
+                          {/* DETAILS */}
 
-                              <Plus size={13} />
+                          <div className="flex-1 min-w-0">
 
-                            </button>
+                            <div className="flex justify-between gap-3">
+
+                              <div className="min-w-0">
+
+                                <h3 className="text-sm font-semibold text-gray-900 truncate">
+                                  {
+                                    product?.name
+                                  }
+                                </h3>
+
+                                {variant?.name && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {
+                                      variant.name
+                                    }
+                                  </p>
+                                )}
+
+                              </div>
+
+                              <div className="text-right shrink-0">
+
+                                <p className="text-sm font-semibold text-gray-900">
+                                  ₹
+                                  {(
+                                    finalPrice *
+                                    item.quantity
+                                  ).toLocaleString(
+                                    "en-IN"
+                                  )}
+                                </p>
+
+                                {originalPrice >
+                                  finalPrice && (
+                                  <p className="text-xs text-gray-400 line-through">
+                                    ₹
+                                    {(
+                                      originalPrice *
+                                      item.quantity
+                                    ).toLocaleString(
+                                      "en-IN"
+                                    )}
+                                  </p>
+                                )}
+
+                              </div>
+
+                            </div>
+
+                            {/* QUANTITY */}
+
+                            <div className="flex items-center gap-2 mt-3">
+
+                              <button
+                                type="button"
+                                disabled={
+                                  updatingVariantId ===
+                                  variant?._id
+                                }
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    variant?._id,
+                                    item.quantity,
+                                    -1
+                                  )
+                                }
+                                className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <Minus
+                                  size={13}
+                                />
+                              </button>
+
+                              <span className="text-sm font-medium w-5 text-center">
+                                {
+                                  item.quantity
+                                }
+                              </span>
+
+                              <button
+                                type="button"
+                                disabled={
+                                  updatingVariantId ===
+                                  variant?._id
+                                }
+                                onClick={() =>
+                                  handleQuantityChange(
+                                    variant?._id,
+                                    item.quantity,
+                                    1
+                                  )
+                                }
+                                className="w-7 h-7 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <Plus
+                                  size={13}
+                                />
+                              </button>
+
+                            </div>
 
                           </div>
 
                         </div>
-
-                      </div>
-
-                    );
-                  })}
+                      );
+                    }
+                  )}
 
                 </div>
 
               </div>
-
 
               {/* PRICE BREAKDOWN */}
 
               <div className="border-t border-gray-200 p-5 sm:p-6">
 
                 <div className="space-y-3 text-sm">
-
 
                   {/* ORIGINAL */}
 
@@ -1326,11 +1455,9 @@ const Checkout = () => {
 
                   </div>
 
-
                   {/* DISCOUNT */}
 
                   {totalDiscount > 0 && (
-
                     <div className="flex items-center justify-between">
 
                       <span className="text-gray-500">
@@ -1345,9 +1472,7 @@ const Checkout = () => {
                       </span>
 
                     </div>
-
                   )}
-
 
                   {/* SHIPPING */}
 
@@ -1364,19 +1489,16 @@ const Checkout = () => {
                           : "text-gray-900"
                       }
                     >
-
                       {shippingFee === 0
                         ? "FREE"
                         : `₹${shippingFee.toLocaleString(
                             "en-IN"
                           )}`}
-
                     </span>
 
                   </div>
 
                 </div>
-
 
                 {/* TOTAL */}
 
@@ -1396,32 +1518,29 @@ const Checkout = () => {
 
                     </div>
 
-
                     <p className="text-2xl font-bold text-gray-900">
-
                       ₹
                       {grandTotal.toLocaleString(
                         "en-IN"
                       )}
-
                     </p>
 
                   </div>
 
                 </div>
 
-
                 {/* PLACE ORDER */}
 
                 <button
                   type="button"
                   disabled={placingOrder}
-                  onClick={handlePlaceOrder}
+                  onClick={
+                    handlePlaceOrder
+                  }
                   className="w-full mt-6 h-14 rounded-xl bg-black text-white font-semibold flex items-center justify-center gap-2 hover:bg-[#00ff03] transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
 
                   {placingOrder ? (
-
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
 
@@ -1429,29 +1548,30 @@ const Checkout = () => {
                         Processing...
                       </span>
                     </>
-
                   ) : (
-
                     <>
-                      <CheckCircle2 size={19} />
+                      <CheckCircle2
+                        size={19}
+                      />
 
                       <span>
-                        {paymentMethod === "razorpay"
+                        {paymentMethod ===
+                        "razorpay"
                           ? "Pay & Place Order"
                           : "Place Order"}
                       </span>
                     </>
-
                   )}
 
                 </button>
-
 
                 {/* SECURE NOTE */}
 
                 <div className="flex items-center justify-center gap-2 mt-4 text-xs text-gray-500">
 
-                  <LockKeyhole size={13} />
+                  <LockKeyhole
+                    size={13}
+                  />
 
                   <span>
                     Secure and encrypted checkout
