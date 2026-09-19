@@ -126,7 +126,16 @@ const Wishlist = () => {
 
   // CALCULATE DISCOUNTED PRICE
   const calculatePrice = (basePrice, discountPercent) => {
-    return basePrice - (basePrice * discountPercent) / 100;
+    const price = Number(basePrice);
+    const discount = Number(discountPercent);
+
+    if (!Number.isFinite(price)) {
+      return 0;
+    }
+
+    const validDiscount = Number.isFinite(discount) ? discount : 0;
+
+    return Math.round(price - (price * validDiscount) / 100);
   };
 
   return (
@@ -290,7 +299,7 @@ const Wishlist = () => {
                         ₹{finalPrice.toLocaleString("en-IN")}
                       </span>
 
-                      {product.discountPercent > 0 && (
+                      {discountPercent > 0 && (
                         <span className="text-[11px] text-gray-400 line-through sm:text-sm">
                           ₹
                           {price.toLocaleString(
@@ -308,7 +317,7 @@ const Wishlist = () => {
                         </span>
                       ) : (
                         <span className="text-[10px] font-medium text-red-500 sm:text-xs">
-                          Out of Stock
+                          {variant ? "Out of Stock" : "Unavailable"}
                         </span>
                       )}
                     </div>
