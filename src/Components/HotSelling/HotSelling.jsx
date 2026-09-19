@@ -493,13 +493,13 @@ const HotSelling = () => {
                     <div className="mt-3 flex flex-wrap items-center gap-3">
 
                       <span className="text-lg font-bold text-gray-900">
-                        From ₹{finalPrice.toLocaleString("en-IN")}
+                        From ₹{Math.round(finalPrice).toLocaleString("en-IN")}
                       </span>
 
                       {variant.discountPercent > 0 && (
                         <>
                           <span className="text-sm text-gray-400 line-through">
-                            ₹{variant.price.toLocaleString("en-IN")}
+                            ₹{Math.round(variant.price).toLocaleString("en-IN")}
                           </span>
 
                           <span className="text-xs font-semibold text-[#00e603]">
@@ -617,14 +617,14 @@ const HotSelling = () => {
                     <div className="mt-2">
 
                       <span className="font-bold text-gray-900">
-                        From ₹{finalPrice.toLocaleString("en-IN")}
+                        From ₹{Math.round(finalPrice).toLocaleString("en-IN")}
                       </span>
 
                       {variant.discountPercent > 0 && (
                         <div className="mt-1 flex items-center gap-2">
 
                           <span className="text-xs text-gray-400 line-through">
-                            ₹{variant.price.toLocaleString("en-IN")}
+                            ₹{Math.round(variant.price).toLocaleString("en-IN")}
                           </span>
 
                           <span className="text-xs font-semibold text-[#00e603]">

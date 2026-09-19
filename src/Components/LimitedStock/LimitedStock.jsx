@@ -382,13 +382,13 @@ const LimitedStock = () => {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
 
                   <span className="text-sm font-bold text-gray-900 sm:text-lg">
-                    ₹{finalPrice.toLocaleString("en-IN")}
+                    ₹{Math.round(finalPrice).toLocaleString("en-IN")}
                   </span>
 
                   {discountPercent > 0 && (
                     <>
                       <span className="text-xs text-gray-400 line-through">
-                        ₹{price.toLocaleString("en-IN")}
+                        ₹{Math.round(price).toLocaleString("en-IN")}
                       </span>
 
                       <span className="text-xs font-semibold text-[#00e603]">

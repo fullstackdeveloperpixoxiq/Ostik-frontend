@@ -229,9 +229,14 @@ const Wishlist = () => {
           /* PRODUCTS */
           <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {wishlistProducts.map((product) => {
+              const variant= product?.variant;
+              const price= Number(variant?.price ?? 0);
+              const discountPercent= Number(
+                variant?.discountPercent ?? 0
+              )
               const finalPrice = calculatePrice(
-                product.variant.price,
-                product.variant.discountPercent
+                price,
+                discountPercent
               );
 
               return (
@@ -248,9 +253,9 @@ const Wishlist = () => {
                     />
 
                     {/* DISCOUNT */}
-                    {product.discountPercent > 0 && (
+                    {discountPercent > 0 && (
                       <span className="absolute left-2 top-2 rounded-full bg-green-600 px-2 py-1 text-[9px] font-semibold text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1 sm:text-xs">
-                        {product.discountPercent}% OFF
+                        {discountPercent}% OFF
                       </span>
                     )}
 
@@ -288,7 +293,7 @@ const Wishlist = () => {
                       {product.discountPercent > 0 && (
                         <span className="text-[11px] text-gray-400 line-through sm:text-sm">
                           ₹
-                          {product.basePrice.toLocaleString(
+                          {price.toLocaleString(
                             "en-IN"
                           )}
                         </span>
@@ -297,9 +302,9 @@ const Wishlist = () => {
 
                     {/* STOCK */}
                     <div className="mt-2 sm:mt-3">
-                      {product.variant.stock > 0 ? (
+                      {variant?.stock > 0 ? (
                         <span className="text-[10px] font-medium text-green-600 sm:text-xs">
-                          In Stock · {product.variant.stock} left
+                          In Stock · {variant?.stock ?? 0} left
                         </span>
                       ) : (
                         <span className="text-[10px] font-medium text-red-500 sm:text-xs">
@@ -312,7 +317,7 @@ const Wishlist = () => {
                     <div className="mt-4 flex gap-2 sm:mt-5 sm:gap-3">
                       <button
                         type="button"
-                        disabled={product.variant.stock === 0}
+                        disabled={!variant || variant.stock <=0}
                         className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-2 py-2.5 text-xs font-semibold text-white transition hover:bg-[#00ff03] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 sm:gap-2 sm:px-4 sm:py-3 sm:text-sm"
                       >
                         <ShoppingBag size={15} className="sm:h-[17px] sm:w-[17px]"/>

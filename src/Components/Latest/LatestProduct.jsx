@@ -528,7 +528,7 @@ const LatestProducts = () => {
 
                     <span className="text-sm font-bold text-gray-900 sm:text-base">
                       From ₹
-                      {finalPrice.toLocaleString(
+                      {Math.round(finalPrice).toLocaleString(
                         "en-IN"
                       )}
                     </span>
@@ -538,7 +538,7 @@ const LatestProducts = () => {
                       <>
                         <span className="text-xs text-gray-400 line-through">
                           ₹
-                          {variant.price.toLocaleString(
+                          {Math.round(variant.price).toLocaleString(
                             "en-IN"
                           )}
                         </span>
