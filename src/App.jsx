@@ -16,6 +16,13 @@ import Profile from './Pages/Profile/Profile'
 import ForgotPassword from './Pages/ForgotPassword/ForgotPassword'
 import ForgotPasswordOTP from './Pages/ForgotPasswordOTP/ForgotPasswordOTP'
 import ResetPassword from './Pages/ResetPassword/ResetPassword'
+import OrderDetails from './Components/Orders/OrderDetails'
+import ReturnRequest from './Pages/Return/Return'
+import Exchange from './Pages/Exchange/Exchange'
+import Exchanges from './Pages/Exchange/Exchanges'
+import Returns from './Pages/Return/Returns'
+import ReturnDetails from './Pages/Return/ReturnDetails'
+import ExchangeDetails from './Pages/Exchange/ExchangeDetails'
 
 function App() {
 
@@ -104,6 +111,41 @@ function App() {
       <Route
       path='/reset-password'
       element={<ResetPassword/>}
+      />
+
+      <Route
+      path='/orders/:id'
+      element={<OrderDetails/>}
+      />
+
+      <Route
+      path='/orders/:orderId/return/:itemId'
+      element={<ReturnRequest/>}
+      />
+
+      <Route
+      path='/returns'
+      element={<Returns/>}
+      />
+
+      <Route
+      path='/returns/:id'
+      element={<ReturnDetails/>}
+      />
+
+      <Route
+      path='/orders/:orderId/exchange/:itemId'
+      element={<Exchange/>}
+      />
+
+      <Route
+      path='/exchanges'
+      element={<Exchanges/>}
+      />
+
+      <Route
+      path='/exchanges/:id'
+      element={<ExchangeDetails/>}
       />
     </Routes>
     </>
