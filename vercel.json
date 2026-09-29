@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/ostik-admin",
+      "destination": "https://ostik-admin.vercel.app/ostik-admin/"
+    },
+    {
       "source": "/ostik-admin/:path*",
       "destination": "https://ostik-admin.vercel.app/ostik-admin/:path*"
     },
