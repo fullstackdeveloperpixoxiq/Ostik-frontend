@@ -1,12 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/ostik-admin",
-      "destination": "https://ostik-admin.vercel.app/ostik-admin/login"
-    },
-    {
       "source": "/ostik-admin/:path*",
-      "destination": "https://ostik-admin.vercel.app/.vercel.app/ostik-admin/:path*"
+      "destination": "https://ostik-admin.vercel.app/ostik-admin/:path*"
     },
     {
       "source": "/(.*)",
