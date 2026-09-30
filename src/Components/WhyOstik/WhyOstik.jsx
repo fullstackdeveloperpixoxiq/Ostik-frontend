@@ -85,7 +85,7 @@ const WhyOstik = () => {
                     {feature.number}
                   </span>
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00ff03] text-[#FFFFFF] transition-all duration-300 group-hover:rotate-[-5deg] group-hover:bg-[#76b900] group-hover:text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#00ff03] text-[#000000] transition-all duration-300 group-hover:rotate-[-5deg] group-hover:bg-[#00cc02] group-hover:text-black">
                     <Icon size={22} strokeWidth={1.8} />
                   </div>
 

@@ -45,8 +45,11 @@ const Navbar = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  //cart count
-  const [cartCount, setCartCount]= useState(0);
+  // =========================================================
+  // CART COUNT
+  // =========================================================
+
+  const [cartCount, setCartCount] = useState(0);
 
   // Reference for desktop Products menu
   const productsMenuRef = useRef(null);
@@ -57,20 +60,20 @@ const Navbar = () => {
 
   const lastScrollYRef = useRef(0);
 
-
   // =========================================================
-// PROTECTED NAVIGATION
-// =========================================================
+  // PROTECTED NAVIGATION
+  // =========================================================
 
-const handleProtectedNavigation= (path)=>{
-  const token= localStorage.getItem("token")
+  const handleProtectedNavigation = (path) => {
+    const token = localStorage.getItem("token");
 
-  if(!token){
-    navigate("/login")
-    return
-  }
-  navigate(path)
-}
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    navigate(path);
+  };
 
   // =========================================================
   // FETCH CATEGORIES
@@ -94,7 +97,6 @@ const handleProtectedNavigation= (path)=>{
 
   // =========================================================
   // MAIN CATEGORIES
-  // parentCategory === null
   // =========================================================
 
   const mainCategories = categories.filter(
@@ -203,24 +205,27 @@ const handleProtectedNavigation= (path)=>{
   };
 
   // =========================================================
-  // MAIN CATEGORY EXPAND / COLLAPSE
+  // MAIN CATEGORY CLICK
   // =========================================================
 
   const handleMainCategoryClick = (category) => {
     setProductsOpen(false);
-    setMobileProductsOpen(false)
-    setMenuOpen(false)
-    setExpandedCategory(null)
-    
+    setMobileProductsOpen(false);
+    setMenuOpen(false);
+    setExpandedCategory(null);
+
     navigate(`/products?category=${category.slug}`);
   };
 
+  // =========================================================
+  // CATEGORY EXPAND / COLLAPSE
+  // =========================================================
 
   const handleCategoryExpand = (categoryId) => {
-  setExpandedCategory((previous) =>
-    previous === categoryId ? null : categoryId
-  );
-};
+    setExpandedCategory((previous) =>
+      previous === categoryId ? null : categoryId
+    );
+  };
 
   // =========================================================
   // OPEN PRODUCTS MENU
@@ -279,9 +284,10 @@ const handleProtectedNavigation= (path)=>{
     };
   }, []);
 
+  // =========================================================
+  // CART COUNT
+  // =========================================================
 
-  //cart count functionalities
-  useEffect(() => {
   const fetchCartCount = async () => {
     const token = localStorage.getItem("token");
 
@@ -319,8 +325,31 @@ const handleProtectedNavigation= (path)=>{
     }
   };
 
-  fetchCartCount();
-}, []);
+  // =========================================================
+  // CART COUNT INITIAL LOAD + LIVE UPDATE
+  // =========================================================
+
+  useEffect(() => {
+    // Fetch when Navbar loads
+    fetchCartCount();
+
+    // Listen for Add To Cart updates
+    const handleCartUpdated = () => {
+      fetchCartCount();
+    };
+
+    window.addEventListener(
+      "cartUpdated",
+      handleCartUpdated
+    );
+
+    return () => {
+      window.removeEventListener(
+        "cartUpdated",
+        handleCartUpdated
+      );
+    };
+  }, []);
 
   // =========================================================
   // CLICK OUTSIDE SEARCH
@@ -357,16 +386,6 @@ const handleProtectedNavigation= (path)=>{
   // =========================================================
   // DESKTOP NAVBAR SCROLL BEHAVIOR
   // =========================================================
-  //
-  // Links will:
-  //
-  // 0px - 80px    -> SHOW
-  // 80px - 120px  -> KEEP CURRENT STATE
-  // 120px+        -> HIDE
-  //
-  // This prevents the links from jumping back immediately
-  // when the user starts scrolling upward.
-  // =========================================================
 
   useEffect(() => {
     lastScrollYRef.current = window.scrollY;
@@ -377,7 +396,6 @@ const handleProtectedNavigation= (path)=>{
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Always show links when user reaches the top area
       if (currentScrollY <= SHOW_LINKS_AT) {
         if (!showLinks) {
           setShowLinks(true);
@@ -387,7 +405,6 @@ const handleProtectedNavigation= (path)=>{
         return;
       }
 
-      // Hide links only after passing the hide threshold
       if (currentScrollY >= HIDE_LINKS_AT) {
         if (showLinks) {
           setShowLinks(false);
@@ -401,11 +418,6 @@ const handleProtectedNavigation= (path)=>{
         return;
       }
 
-      // Between 80px and 120px:
-      // Do nothing.
-      //
-      // This is the important part that prevents
-      // the navbar links from jumping/flickering.
       lastScrollYRef.current = currentScrollY;
     };
 
@@ -459,9 +471,7 @@ const handleProtectedNavigation= (path)=>{
 
       <div className="hidden xl:block">
 
-        {/* =====================================================
-            TOP SECTION
-        ====================================================== */}
+        {/* TOP SECTION */}
 
         <div className="h-[110px] px-8 flex items-center">
 
@@ -477,8 +487,6 @@ const handleProtectedNavigation= (path)=>{
                 max-w-[675px]
               "
             >
-
-              {/* SEARCH BOX */}
 
               <div
                 className="
@@ -678,9 +686,7 @@ const handleProtectedNavigation= (path)=>{
 
           </div>
 
-          {/* =================================================
-              LOGO
-          ================================================= */}
+          {/* LOGO */}
 
           <div
             className="
@@ -706,9 +712,7 @@ const handleProtectedNavigation= (path)=>{
 
           </div>
 
-          {/* =================================================
-              RIGHT ACTIONS
-          ================================================= */}
+          {/* RIGHT ACTIONS */}
 
           <div className="flex-1 min-w-0 flex justify-end">
 
@@ -748,7 +752,9 @@ const handleProtectedNavigation= (path)=>{
 
               <button
                 type="button"
-                onClick={() => handleProtectedNavigation("/wishlist")}
+                onClick={() =>
+                  handleProtectedNavigation("/wishlist")
+                }
                 className="
                   text-white
                   hover:text-[#00ff03]
@@ -792,7 +798,9 @@ const handleProtectedNavigation= (path)=>{
 
               <button
                 type="button"
-                onClick={() => handleProtectedNavigation("/cart")}
+                onClick={() =>
+                  handleProtectedNavigation("/cart")
+                }
                 className="
                   relative
                   text-white
@@ -837,9 +845,7 @@ const handleProtectedNavigation= (path)=>{
 
         </div>
 
-        {/* =====================================================
-            BOTTOM NAVIGATION
-        ====================================================== */}
+        {/* BOTTOM NAVIGATION */}
 
         <div
           className={`
@@ -876,13 +882,7 @@ const handleProtectedNavigation= (path)=>{
             `}
           >
 
-            {/* =================================================
-                LEFT LINKS
-            ================================================= */}
-
             <nav className="flex items-center gap-14">
-
-              {/* HOME */}
 
               <a
                 href="/"
@@ -898,9 +898,7 @@ const handleProtectedNavigation= (path)=>{
                 Home
               </a>
 
-              {/* =================================================
-                  PRODUCTS
-              ================================================= */}
+              {/* PRODUCTS */}
 
               <div
                 ref={productsMenuRef}
@@ -911,8 +909,6 @@ const handleProtectedNavigation= (path)=>{
                   items-center
                 "
               >
-
-                {/* PRODUCTS BUTTON */}
 
                 <button
                   type="button"
@@ -947,10 +943,6 @@ const handleProtectedNavigation= (path)=>{
 
                 </button>
 
-                {/* =================================================
-                    DESKTOP MEGA MENU
-                ================================================= */}
-
                 {productsOpen && (
 
                   <div
@@ -970,8 +962,6 @@ const handleProtectedNavigation= (path)=>{
                       p-8
                     "
                   >
-
-                    {/* MENU HEADER */}
 
                     <div className="mb-6">
 
@@ -995,126 +985,136 @@ const handleProtectedNavigation= (path)=>{
 
                     </div>
 
-                    {/* =================================================
-                        CATEGORY LIST
-                    ================================================= */}
-
                     {mainCategories.length > 0 ? (
 
                       <div className="grid grid-cols-2 gap-x-10">
+
                         {mainCategories.map((category) => {
-  const subCategories = getSubCategories(category._id);
-  const isExpanded = expandedCategory === category._id;
 
-  return (
-    <div
-      key={category._id}
-      className="border-b border-gray-100"
-    >
-      {/* MAIN CATEGORY ROW */}
+                          const subCategories =
+                            getSubCategories(category._id);
 
-      <div className="w-full flex items-center">
+                          const isExpanded =
+                            expandedCategory === category._id;
 
-        {/* CATEGORY NAME → NAVIGATE */}
+                          return (
+                            <div
+                              key={category._id}
+                              className="border-b border-gray-100"
+                            >
 
-        <button
-          type="button"
-          onClick={() => handleMainCategoryClick(category)}
-          className="
-            flex-1
-            py-4
-            text-left
-            text-[16px]
-            font-bold
-            text-gray-800
-            hover:text-[#00e603]
-            transition-colors
-          "
-        >
-          {category.name}
-        </button>
+                              <div className="w-full flex items-center">
 
-        {/* ARROW → EXPAND ONLY */}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleMainCategoryClick(category)
+                                  }
+                                  className="
+                                    flex-1
+                                    py-4
+                                    text-left
+                                    text-[16px]
+                                    font-bold
+                                    text-gray-800
+                                    hover:text-[#00e603]
+                                    transition-colors
+                                  "
+                                >
+                                  {category.name}
+                                </button>
 
-        {subCategories.length > 0 && (
-          <button
-            type="button"
-            onClick={() =>
-              handleCategoryExpand(category._id)
-            }
-            className="
-              p-2
-              text-gray-600
-              hover:text-[#00e603]
-              transition-colors
-            "
-            aria-label={`Show ${category.name} subcategories`}
-          >
-            <ChevronRight
-              size={18}
-              className={`
-                transition-transform
-                duration-300
-                ${
-                  isExpanded
-                    ? "rotate-90"
-                    : ""
-                }
-              `}
-            />
-          </button>
-        )}
+                                {subCategories.length > 0 && (
 
-      </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleCategoryExpand(
+                                        category._id
+                                      )
+                                    }
+                                    className="
+                                      p-2
+                                      text-gray-600
+                                      hover:text-[#00e603]
+                                      transition-colors
+                                    "
+                                    aria-label={`Show ${category.name} subcategories`}
+                                  >
 
-      {/* SUBCATEGORIES */}
+                                    <ChevronRight
+                                      size={18}
+                                      className={`
+                                        transition-transform
+                                        duration-300
+                                        ${
+                                          isExpanded
+                                            ? "rotate-90"
+                                            : ""
+                                        }
+                                      `}
+                                    />
 
-      {isExpanded && subCategories.length > 0 && (
-        <div
-          className="
-            pb-4
-            pl-4
-            flex
-            flex-col
-            gap-3
-            border-l-2
-            border-gray-100
-          "
-        >
-          {subCategories.map((subCategory) => (
-            <button
-              key={subCategory._id}
-              type="button"
-              onClick={() =>
-                handleCategoryClick(subCategory)
-              }
-              className="
-                text-left
-                text-[14px]
-                text-gray-500
-                hover:text-[#00e603]
-                transition-colors
-                duration-200
-              "
-            >
-              {subCategory.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-})}
+                                  </button>
+
+                                )}
+
+                              </div>
+
+                              {isExpanded &&
+                                subCategories.length > 0 && (
+
+                                  <div
+                                    className="
+                                      pb-4
+                                      pl-4
+                                      flex
+                                      flex-col
+                                      gap-3
+                                      border-l-2
+                                      border-gray-100
+                                    "
+                                  >
+
+                                    {subCategories.map(
+                                      (subCategory) => (
+
+                                        <button
+                                          key={subCategory._id}
+                                          type="button"
+                                          onClick={() =>
+                                            handleCategoryClick(
+                                              subCategory
+                                            )
+                                          }
+                                          className="
+                                            text-left
+                                            text-[14px]
+                                            text-gray-500
+                                            hover:text-[#00e603]
+                                            transition-colors
+                                            duration-200
+                                          "
+                                        >
+                                          {subCategory.name}
+                                        </button>
+
+                                      )
+                                    )}
+
+                                  </div>
+
+                                )}
+
+                            </div>
+                          );
+                        })}
+
                       </div>
 
                     ) : (
 
-                      <p
-                        className="
-                          text-sm
-                          text-gray-500
-                        "
-                      >
+                      <p className="text-sm text-gray-500">
                         No categories available
                       </p>
 
@@ -1126,7 +1126,7 @@ const handleProtectedNavigation= (path)=>{
 
               </div>
 
-              {/* IN CAR */}
+              {/* OTHER LINKS */}
 
               <a
                 href="/in-car"
@@ -1142,8 +1142,6 @@ const handleProtectedNavigation= (path)=>{
                 In Car
               </a>
 
-              {/* POWER BANKS */}
-
               <a
                 href="/power-banks"
                 className="
@@ -1157,8 +1155,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Power Banks
               </a>
-
-              {/* BUNDLES */}
 
               <a
                 href="/bundles"
@@ -1174,8 +1170,6 @@ const handleProtectedNavigation= (path)=>{
                 Bundles
               </a>
 
-              {/* CONTACT */}
-
               <a
                 href="/contact"
                 className="
@@ -1190,8 +1184,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Contact
               </a>
-
-              {/* OFFERS */}
 
               <a
                 href="/offers"
@@ -1209,10 +1201,6 @@ const handleProtectedNavigation= (path)=>{
 
             </nav>
 
-            {/* =================================================
-                RIGHT LINKS
-            ================================================= */}
-
             <div
               className="
                 flex
@@ -1223,8 +1211,6 @@ const handleProtectedNavigation= (path)=>{
                 border-gray-300
               "
             >
-
-              {/* ORDERS */}
 
               <a
                 href="/orders"
@@ -1239,8 +1225,6 @@ const handleProtectedNavigation= (path)=>{
                 Orders
               </a>
 
-              {/* PROFILE */}
-
               <a
                 href="/profile"
                 className="
@@ -1253,8 +1237,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Profile
               </a>
-
-              {/* WHATSAPP */}
 
               <a
                 href="/whatsapp"
@@ -1298,9 +1280,7 @@ const handleProtectedNavigation= (path)=>{
 
       <div className="xl:hidden">
 
-        {/* =====================================================
-            MOBILE TOP
-        ====================================================== */}
+        {/* MOBILE TOP */}
 
         <div
           className="
@@ -1312,11 +1292,11 @@ const handleProtectedNavigation= (path)=>{
           "
         >
 
-          {/* MENU BUTTON */}
-
           <button
             type="button"
-            onClick={() => setMenuOpen((previous) => !previous)}
+            onClick={() =>
+              setMenuOpen((previous) => !previous)
+            }
             className="p-2 text-white"
             aria-label="Menu"
           >
@@ -1334,8 +1314,6 @@ const handleProtectedNavigation= (path)=>{
             )}
 
           </button>
-
-          {/* LOGO */}
 
           <a
             href="/"
@@ -1355,11 +1333,7 @@ const handleProtectedNavigation= (path)=>{
 
           </a>
 
-          {/* MOBILE ACTIONS */}
-
           <div className="flex items-center gap-4">
-
-            {/* COUNTRY */}
 
             <button
               type="button"
@@ -1390,8 +1364,6 @@ const handleProtectedNavigation= (path)=>{
 
             </button>
 
-            {/* WISHLIST */}
-
             <button
               type="button"
               onClick={() => navigate("/wishlist")}
@@ -1406,8 +1378,6 @@ const handleProtectedNavigation= (path)=>{
               />
 
             </button>
-
-            {/* PROFILE */}
 
             <button
               type="button"
@@ -1424,11 +1394,11 @@ const handleProtectedNavigation= (path)=>{
 
             </button>
 
-            {/* CART */}
-
             <button
               type="button"
-              onClick={() => handleProtectedNavigation("/cart")}
+              onClick={() =>
+                handleProtectedNavigation("/cart")
+              }
               className="
                 relative
                 text-white
@@ -1468,9 +1438,7 @@ const handleProtectedNavigation= (path)=>{
 
         </div>
 
-        {/* =====================================================
-            MOBILE SEARCH
-        ====================================================== */}
+        {/* MOBILE SEARCH */}
 
         <div className="px-4 pb-3">
 
@@ -1481,8 +1449,6 @@ const handleProtectedNavigation= (path)=>{
               w-full
             "
           >
-
-            {/* SEARCH BOX */}
 
             <div
               className="
@@ -1547,8 +1513,6 @@ const handleProtectedNavigation= (path)=>{
               </button>
 
             </div>
-
-            {/* MOBILE SEARCH RESULTS */}
 
             {searchOpen && searchQuery.trim() && (
               <div
@@ -1683,9 +1647,7 @@ const handleProtectedNavigation= (path)=>{
 
         </div>
 
-        {/* =====================================================
-            MOBILE MENU
-        ====================================================== */}
+        {/* MOBILE MENU */}
 
         {menuOpen && (
 
@@ -1701,8 +1663,6 @@ const handleProtectedNavigation= (path)=>{
 
             <nav className="flex flex-col gap-5">
 
-              {/* HOME */}
-
               <a
                 href="/"
                 className="
@@ -1716,9 +1676,7 @@ const handleProtectedNavigation= (path)=>{
                 Home
               </a>
 
-              {/* =================================================
-                  MOBILE PRODUCTS
-              ================================================= */}
+              {/* MOBILE PRODUCTS */}
 
               <div>
 
@@ -1756,8 +1714,6 @@ const handleProtectedNavigation= (path)=>{
 
                 </button>
 
-                {/* MOBILE CATEGORY LIST */}
-
                 {mobileProductsOpen && (
 
                   <div
@@ -1773,145 +1729,139 @@ const handleProtectedNavigation= (path)=>{
 
                       <div className="flex flex-col">
 
-                        {mainCategories.map(
-                          (category) => {
+                        {mainCategories.map((category) => {
 
-                            const subCategories =
-                              getSubCategories(
-                                category._id
-                              );
+                          const subCategories =
+                            getSubCategories(category._id);
 
-                            const isExpanded =
-                              expandedCategory ===
-                              category._id;
+                          const isExpanded =
+                            expandedCategory === category._id;
 
-                            return (
+                          return (
 
-                              <div
-    key={category._id}
-    className="
-      border-b
-      border-gray-200
-      last:border-b-0
-    "
-  >
+                            <div
+                              key={category._id}
+                              className="
+                                border-b
+                                border-gray-200
+                                last:border-b-0
+                              "
+                            >
 
-    {/* MAIN CATEGORY ROW */}
+                              <div className="w-full flex items-center">
 
-    <div className="w-full flex items-center">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleMainCategoryClick(
+                                      category
+                                    )
+                                  }
+                                  className="
+                                    flex-1
+                                    py-4
+                                    text-left
+                                    text-base
+                                    font-bold
+                                    text-gray-700
+                                    hover:text-[#00e603]
+                                    transition-colors
+                                  "
+                                >
+                                  {category.name}
+                                </button>
 
-      {/* CATEGORY NAME → NAVIGATE */}
+                                {subCategories.length > 0 && (
 
-      <button
-        type="button"
-        onClick={() =>
-          handleMainCategoryClick(category)
-        }
-        className="
-          flex-1
-          py-4
-          text-left
-          text-base
-          font-bold
-          text-gray-700
-          hover:text-[#00e603]
-          transition-colors
-        "
-      >
-        {category.name}
-      </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleCategoryExpand(
+                                        category._id
+                                      )
+                                    }
+                                    className="
+                                      p-2
+                                      text-gray-600
+                                      hover:text-[#00e603]
+                                      transition-colors
+                                    "
+                                    aria-label={`Show ${category.name} subcategories`}
+                                  >
 
-      {/* ARROW → EXPAND ONLY */}
+                                    <ChevronRight
+                                      size={18}
+                                      className={`
+                                        transition-transform
+                                        duration-300
+                                        ${
+                                          isExpanded
+                                            ? "rotate-90"
+                                            : ""
+                                        }
+                                      `}
+                                    />
 
-      {subCategories.length > 0 && (
-        <button
-          type="button"
-          onClick={() =>
-            handleCategoryExpand(category._id)
-          }
-          className="
-            p-2
-            text-gray-600
-            hover:text-[#00e603]
-            transition-colors
-          "
-          aria-label={`Show ${category.name} subcategories`}
-        >
-          <ChevronRight
-            size={18}
-            className={`
-              transition-transform
-              duration-300
-              ${
-                isExpanded
-                  ? "rotate-90"
-                  : ""
-              }
-            `}
-          />
-        </button>
-      )}
+                                  </button>
 
-    </div>
+                                )}
 
-    {/* SUBCATEGORIES */}
+                              </div>
 
-    {isExpanded &&
-      subCategories.length > 0 && (
-        <div
-          className="
-            pb-4
-            pl-4
-            flex
-            flex-col
-            gap-3
-            border-l-2
-            border-gray-200
-          "
-        >
+                              {isExpanded &&
+                                subCategories.length > 0 && (
 
-          {subCategories.map(
-            (subCategory) => (
-              <button
-                key={subCategory._id}
-                type="button"
-                onClick={() =>
-                  handleCategoryClick(
-                    subCategory
-                  )
-                }
-                className="
-                  text-left
-                  text-sm
-                  text-gray-500
-                  hover:text-[#00e603]
-                  transition-colors
-                "
-              >
-                {subCategory.name}
-              </button>
-            )
-          )}
+                                  <div
+                                    className="
+                                      pb-4
+                                      pl-4
+                                      flex
+                                      flex-col
+                                      gap-3
+                                      border-l-2
+                                      border-gray-200
+                                    "
+                                  >
 
-        </div>
-      )}
+                                    {subCategories.map(
+                                      (subCategory) => (
 
-  </div>
+                                        <button
+                                          key={subCategory._id}
+                                          type="button"
+                                          onClick={() =>
+                                            handleCategoryClick(
+                                              subCategory
+                                            )
+                                          }
+                                          className="
+                                            text-left
+                                            text-sm
+                                            text-gray-500
+                                            hover:text-[#00e603]
+                                            transition-colors
+                                          "
+                                        >
+                                          {subCategory.name}
+                                        </button>
 
-                            );
-                          }
-                        )}
+                                      )
+                                    )}
+
+                                  </div>
+
+                                )}
+
+                            </div>
+
+                          );
+                        })}
 
                       </div>
 
                     ) : (
 
-                      <p
-                        className="
-                          text-sm
-                          text-gray-500
-                        "
-                      >
+                      <p className="text-sm text-gray-500">
                         No categories available
                       </p>
 
@@ -1922,8 +1872,6 @@ const handleProtectedNavigation= (path)=>{
                 )}
 
               </div>
-
-              {/* IN CAR */}
 
               <a
                 href="/in-car"
@@ -1938,8 +1886,6 @@ const handleProtectedNavigation= (path)=>{
                 In Car
               </a>
 
-              {/* POWER BANKS */}
-
               <a
                 href="/power-banks"
                 className="
@@ -1952,8 +1898,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Power Banks
               </a>
-
-              {/* BUNDLES */}
 
               <a
                 href="/bundles"
@@ -1968,8 +1912,6 @@ const handleProtectedNavigation= (path)=>{
                 Bundles
               </a>
 
-              {/* CONTACT */}
-
               <a
                 href="/contact"
                 className="
@@ -1982,8 +1924,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Contact
               </a>
-
-              {/* OFFERS */}
 
               <a
                 href="/offers"
@@ -2000,8 +1940,6 @@ const handleProtectedNavigation= (path)=>{
 
               <hr />
 
-              {/* ORDERS */}
-
               <a
                 href="/orders"
                 className="
@@ -2014,8 +1952,6 @@ const handleProtectedNavigation= (path)=>{
                 Orders
               </a>
 
-              {/* PROFILE */}
-
               <a
                 href="/profile"
                 className="
@@ -2027,8 +1963,6 @@ const handleProtectedNavigation= (path)=>{
               >
                 Profile
               </a>
-
-              {/* WHATSAPP */}
 
               <a
                 href="/whatsapp"

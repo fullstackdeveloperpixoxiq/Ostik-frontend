@@ -335,6 +335,9 @@ const ProductDetail = () => {
         }
       );
 
+      // Update cart count immediately
+      window.dispatchEvent(new Event("cartUpdated"));
+
       // Show backend success message
       toast.success(
         response.data.message || "Product added to cart"
@@ -370,23 +373,90 @@ const ProductDetail = () => {
   // BUY NOW
   // =========================================================
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
+    const token = localStorage.getItem("token");
+
+    // Check login
+    if (!token) {
+      toast.error("Please login to continue");
+      navigate("/login");
+      return;
+    }
+
+    // Check variant
     if (!selectedVariant) {
       toast.error("Please select a variant");
       return;
     }
 
-    if (isOutOfStock) {
+    // Check stock
+    if (currentStock <= 0) {
       toast.error("This product is out of stock");
       return;
     }
 
-    /*
-      Buy Now → Checkout integration will be connected
-      after checking your existing checkout/cart flow.
-    */
+    // Check quantity
+    if (quantity < 1) {
+      toast.error("Please select a valid quantity");
+      return;
+    }
 
-    toast.success("Buy Now flow will be connected next");
+    // Prevent quantity greater than stock
+    if (quantity > currentStock) {
+      toast.error(
+        `Only ${currentStock} items are available in stock`
+      );
+      return;
+    }
+
+    try {
+      setCartLoading(true);
+
+      // Add product to cart
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/cart`,
+        {
+          productId: product._id,
+          variantId: selectedVariant._id,
+          quantity: quantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update Navbar cart count immediately
+      window.dispatchEvent(new Event("cartUpdated"));
+
+      // Go directly to cart
+      navigate("/cart");
+    } catch (error) {
+      console.error("Buy Now error:", error);
+
+      // Token expired / invalid
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        toast.error(
+          error.response?.data?.message ||
+            "Please login again"
+        );
+
+        navigate("/login");
+        return;
+      }
+
+      // Other backend errors
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to add product to cart"
+      );
+    } finally {
+      setCartLoading(false);
+    }
   };
 
   // =========================================================
@@ -947,13 +1017,14 @@ const ProductDetail = () => {
 
                 <button
                   disabled={
+                    cartLoading ||
                     !selectedVariant ||
                     isOutOfStock
                   }
                   onClick={handleBuyNow}
                   className="flex h-11 flex-1 items-center justify-center rounded-xl bg-black px-3 text-xs font-bold text-white transition hover:bg-[#00ff03] hover:text-black disabled:cursor-not-allowed disabled:opacity-40 sm:h-12 sm:px-5 sm:text-sm"
                 >
-                  Buy Now
+                  {cartLoading ? "Adding..." : "Buy Now"}
                 </button>
 
                 {/* WISHLIST ICON */}

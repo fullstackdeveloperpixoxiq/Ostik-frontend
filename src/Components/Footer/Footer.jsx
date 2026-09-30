@@ -114,7 +114,7 @@ const Footer = () => {
               type="button"
               onClick={handleSubscribe}
               disabled={loading}
-              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#649f00] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-[#F5F5F5] transition hover:bg-[#00cc02] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Subscribing..." : "Subscribe"}
             </button>
@@ -469,7 +469,7 @@ const Footer = () => {
       <button
         onClick={scrollToTop}
         aria-label="Back to top"
-        className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#00ff03] text-white shadow-lg transition hover:bg-[#649f00] sm:bottom-6 sm:right-6 sm:h-11 sm:w-11"
+        className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#00ff03] text-[#00000] shadow-lg transition hover:bg-[#00cc02] sm:bottom-6 sm:right-6 sm:h-11 sm:w-11"
       >
 
         <ArrowUp size={18} />

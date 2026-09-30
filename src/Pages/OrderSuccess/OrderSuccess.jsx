@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Clock3,
 } from "lucide-react";
+import OrderTracking from "../../Components/OrderTracking/OrderTracking";
 
 const OrderSuccess = () => {
   const { orderId } = useParams();
@@ -302,88 +303,10 @@ const OrderSuccess = () => {
 
         </section>
 
-
-        {/* ==================================================
-            ORDER STATUS STRIP
-        ================================================== */}
-
-        <section className="mt-10 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
-
-          <div className="grid grid-cols-3 gap-2 sm:gap-6">
-
-            {/* Order placed */}
-
-            <div className="text-center">
-
-              <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Check
-                  size={20}
-                  className="text-green-600"
-                  strokeWidth={2.5}
-                />
-              </div>
-
-              <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                Order Placed
-              </p>
-
-              <p className="text-[11px] sm:text-xs text-gray-500 mt-1">
-                {formatDate(order.placedAt)}
-              </p>
-
-            </div>
-
-
-            {/* Processing */}
-
-            <div className="text-center relative">
-
-              <div className="hidden sm:block absolute top-5 right-[58%] w-full h-px bg-gray-200"></div>
-
-              <div className="relative w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock3
-                  size={19}
-                  className="text-gray-500"
-                />
-              </div>
-
-              <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                Processing
-              </p>
-
-              <p className="text-[11px] sm:text-xs text-gray-500 mt-1">
-                Coming next
-              </p>
-
-            </div>
-
-
-            {/* Delivery */}
-
-            <div className="text-center relative">
-
-              <div className="hidden sm:block absolute top-5 right-[58%] w-full h-px bg-gray-200"></div>
-
-              <div className="relative w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Truck
-                  size={19}
-                  className="text-gray-500"
-                />
-              </div>
-
-              <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                Delivery
-              </p>
-
-              <p className="text-[11px] sm:text-xs text-gray-500 mt-1">
-                We'll keep you updated
-              </p>
-
-            </div>
-
-          </div>
-
-        </section>
+        {/* tracking systme */}
+        <div className="m-10">
+          <OrderTracking order={order}/>
+        </div>
 
 
         {/* ==================================================
