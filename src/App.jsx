@@ -23,6 +23,8 @@ import Exchanges from './Pages/Exchange/Exchanges'
 import Returns from './Pages/Return/Returns'
 import ReturnDetails from './Pages/Return/ReturnDetails'
 import ExchangeDetails from './Pages/Exchange/ExchangeDetails'
+import Offers from './Pages/Offers/Offers'
+import Bundles from './Pages/Bundle/Bundle'
 
 function App() {
 
@@ -146,6 +148,16 @@ function App() {
       <Route
       path='/exchanges/:id'
       element={<ExchangeDetails/>}
+      />
+
+      <Route
+      path='/offers'
+      element={<Offers/>}
+      />
+
+      <Route
+      path='/bundles'
+      element={<Bundles/>}
       />
     </Routes>
     </>

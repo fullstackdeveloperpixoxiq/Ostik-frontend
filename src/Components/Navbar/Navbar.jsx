@@ -1128,8 +1128,8 @@ const Navbar = () => {
 
               {/* OTHER LINKS */}
 
-              <a
-                href="/in-car"
+              {/* <a
+                href="/chargers"
                 className="
                   text-[18px]
                   font-bold
@@ -1140,7 +1140,7 @@ const Navbar = () => {
                 "
               >
                 In Car
-              </a>
+              </a> */}
 
               <a
                 href="/power-banks"
@@ -1166,6 +1166,7 @@ const Navbar = () => {
                   transition-colors
                   duration-300
                 "
+                onClick={()=>{ navigate("/bundles")}}
               >
                 Bundles
               </a>
@@ -1195,6 +1196,7 @@ const Navbar = () => {
                   transition-colors
                   duration-300
                 "
+                onClick={()=>{ navigate("/offers")}}
               >
                 Offers
               </a>
@@ -1908,6 +1910,7 @@ const Navbar = () => {
                   hover:text-[#00e603]
                   transition-colors
                 "
+                onClick={()=>{ navigate("/bundles")}}
               >
                 Bundles
               </a>
@@ -1921,6 +1924,7 @@ const Navbar = () => {
                   hover:text-[#00e603]
                   transition-colors
                 "
+                onClick={()=> navigate("/contact")}
               >
                 Contact
               </a>
@@ -1934,6 +1938,7 @@ const Navbar = () => {
                   hover:text-[#00e603]
                   transition-colors
                 "
+                onClick={()=>{ navigate("/offers")}}
               >
                 Offers
               </a>
@@ -1948,6 +1953,7 @@ const Navbar = () => {
                   hover:text-[#00e603]
                   transition-colors
                 "
+                onClick={()=>{ navigate("/orders")}}
               >
                 Orders
               </a>

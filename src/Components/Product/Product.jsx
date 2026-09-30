@@ -68,51 +68,150 @@ const Products = () => {
         setLoading(true);
         setError("");
 
-        const params= {}
-       //catcgory filter
-        if (categorySlug) {
-          params.category = categorySlug;
-        }
-
-        // Search filter
-      if (searchQuery) {
-        params.search = searchQuery;
-      }
-
+        //no category
+        if (!categorySlug) {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/product`,
-        {
-          params,
-        }
+          {
+            params: searchQuery
+              ? { search: searchQuery }
+              : {},
+          }
         );
-
-        const fetchedProducts = response.data.products || [];
-
-        setProducts(fetchedProducts);
-
-        if(categorySlug && fetchedProducts.length >0){
-          setCategoryName(
-          fetchedProducts[0]?.category?.name || ""
-        );
-        }
-        else{
-          setCategoryName("")
-        }
-      } catch (err) {
-        console.log("PRODUCT FETCH ERROR:", err);
-
-        setError(
-          err.response?.data?.message ||
-            "Failed to fetch products"
-        );
-      } finally {
-        setLoading(false);
+        setProducts(response.data.products || []);
+        setCategoryName("");
+        return
       }
-    };
+      //fetch categories
+      const categoryResponse= await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/category`
+      );
 
-    fetchProducts();
-  }, [categorySlug]);
+      const categories= categoryResponse.data.categories ||
+      categoryResponse.data || []
 
+      // Find selected category
+      const selectedCategory = categories.find(
+        (category) =>
+          category.slug === categorySlug
+      );
+
+      if (!selectedCategory) {
+        setProducts([]);
+        setCategoryName("");
+        return;
+      }
+
+      //find subcategories
+      const subcategories= categories.filter(
+        (category)=>{
+          const parentId =
+            typeof category.parentCategory === "object"
+              ? category.parentCategory?._id
+              : category.parentCategory;
+
+          return (
+            parentId?.toString() ===
+            selectedCategory._id?.toString()
+          );
+      });
+      
+      //main category
+      const isMainCategory =
+        !selectedCategory.parentCategory;
+
+      let fetchedProducts = [];
+
+      if (isMainCategory && subcategories.length > 0) {
+        const categorySlugs = [
+          selectedCategory.slug,
+          ...subcategories.map(
+            (category) => category.slug
+          ),
+        ];
+
+        const responses = await Promise.all(
+          categorySlugs.map((slug) =>
+            axios.get(
+              `${import.meta.env.VITE_API_URL}/api/product`,
+              {
+                params: {
+                  category: slug,
+                  ...(searchQuery
+                    ? { search: searchQuery }
+                    : {}),
+                },
+    }
+)
+ )
+);
+// Combine all products
+        fetchedProducts = responses.flatMap(
+          (response) =>
+            response.data.products || []
+        );
+
+        // Remove duplicate products
+        const uniqueProducts = Array.from(
+          new Map(
+            fetchedProducts.map((product) => [
+              product._id,
+              product,
+            ])
+          ).values()
+        );
+
+        fetchedProducts = uniqueProducts;
+
+      } else {
+
+        //fetch only that category
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/product`,
+          {
+            params: {
+              category: categorySlug,
+              ...(searchQuery
+                ? { search: searchQuery }
+                : {}),
+            },
+          }
+        );
+
+        fetchedProducts =
+          response.data.products || [];
+      }
+
+//set product
+ setProducts(fetchedProducts);
+
+      // Use selected category name
+      setCategoryName(
+        selectedCategory.name || ""
+      );
+
+    } catch (err) {
+      console.error(
+        "PRODUCT FETCH ERROR:",
+        err
+      );
+
+      setProducts([]);
+
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch products"
+      );
+    } finally {
+      setLoading(false);
+
+        }
+  };
+
+  fetchProducts();
+}, [categorySlug, searchQuery]);
+       
+    
   // =========================================================
   // FETCH WISHLIST
   // =========================================================
