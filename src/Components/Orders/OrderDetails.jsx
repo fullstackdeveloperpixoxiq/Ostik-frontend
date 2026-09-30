@@ -17,6 +17,7 @@ import {
 
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
+import OrderTracking from "../OrderTracking/OrderTracking"
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -473,6 +474,11 @@ const OrderDetails = () => {
 
             </div>
           </div>
+
+          {/* order tracking */}
+              <div className="m-10">
+                <OrderTracking order={order}/>
+              </div>
 
           {/* PRODUCTS */}
 
