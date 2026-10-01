@@ -865,12 +865,6 @@ const ProductDetail = () => {
                       Variant
                     </h3>
 
-                    {selectedVariant && (
-                      <span className="text-sm text-gray-500">
-                        {selectedVariant.name}
-                      </span>
-                    )}
-
                   </div>
 
                   <div className="flex flex-wrap gap-3">
