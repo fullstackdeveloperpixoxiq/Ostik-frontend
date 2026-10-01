@@ -8,7 +8,7 @@ const SuperBanner = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -55,7 +55,7 @@ const SuperBanner = () => {
 
   if (loading) {
     return (
-      <div className="h-[450px] w-full animate-pulse bg-gray-100" />
+      <div className="h-[300px] w-full animate-pulse bg-gray-100 sm:h-[450px]" />
     );
   }
 
@@ -69,42 +69,47 @@ const SuperBanner = () => {
     <section className="relative w-full overflow-hidden">
 
       {/* Banner */}
-      <div className="relative h-[420px] w-full sm:h-[480px] lg:h-[560px]">
+      <div className="relative h-[300px] w-full sm:h-auto">
 
         {/* Image */}
         <img
           src={banner.image}
           alt={banner.title}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover sm:static sm:h-auto sm:w-full sm:object-contain"
         />
 
         {/* Dark shade */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
 
         {/* Content */}
-        <div className="relative z-10 flex h-full items-center">
-          <div className="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
+        <div className="absolute inset-0 z-10 flex items-center">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-10 lg:px-16">
 
             <div className="max-w-xl text-white">
 
               {banner.subtitle && (
-                <p className="mb-3 text-sm font-medium uppercase tracking-widest">
+                <p className="mb-2 text-[7px] font-medium uppercase tracking-widest sm:mb-3 sm:text-sm">
                   {banner.subtitle}
                 </p>
               )}
 
-              <h1 className="text-2xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className="text-xl font-bold leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 {banner.title}
               </h1>
 
               <button
-  onClick={() => navigate(banner.buttonLink || "/products")}
-  className="mt-5 sm:mt-7 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition hover:bg-[#00e603]"
->
-  {banner.buttonText || "Shop Now"}
+                onClick={() =>
+                  navigate(banner.buttonLink || "/products")
+                }
+                className="mt-3 inline-flex items-center gap-2 rounded-md bg-[#00ff03] px-4 py-2 text-xs font-semibold text-black transition hover:bg-[#00e603] sm:mt-7 sm:px-6 sm:py-3 sm:text-sm"
+              >
+                {banner.buttonText || "Shop Now"}
 
-  <ArrowRight size={18} />
-</button>
+                <ArrowRight
+                  size={18}
+                  className="sm:h-[18px] sm:w-[18px]"
+                />
+              </button>
 
             </div>
           </div>
@@ -114,9 +119,12 @@ const SuperBanner = () => {
         {banners.length > 1 && (
           <button
             onClick={previousBanner}
-            className="absolute left-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white hover:text-black"
+            className="absolute left-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white hover:text-black sm:left-4 sm:h-10 sm:w-10"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft
+              size={18}
+              className="sm:h-[22px] sm:w-[22px]"
+            />
           </button>
         )}
 
@@ -124,17 +132,19 @@ const SuperBanner = () => {
         {banners.length > 1 && (
           <button
             onClick={nextBanner}
-            className="absolute right-4 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white hover:text-black"
+            className="absolute right-2 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition hover:bg-white hover:text-black sm:right-4 sm:h-10 sm:w-10"
           >
-            <ChevronRight size={22} />
+            <ChevronRight
+              size={18}
+              className="sm:h-[22px] sm:w-[22px]"
+            />
           </button>
         )}
-
       </div>
 
       {/* Indicators */}
       {banners.length > 1 && (
-        <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+        <div className="flex w-full items-center justify-center gap-2 py-3 sm:py-4">
           {banners.map((_, index) => (
             <button
               key={index}
@@ -142,7 +152,7 @@ const SuperBanner = () => {
               className={`h-1.5 rounded-full transition-all ${
                 currentIndex === index
                   ? "w-8 bg-[#00ff03]"
-                  : "w-5 bg-white/60"
+                  : "w-5 bg-gray-300"
               }`}
             />
           ))}
