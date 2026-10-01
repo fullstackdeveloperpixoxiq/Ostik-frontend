@@ -174,21 +174,21 @@ const ProductDetail = () => {
   // =========================================================
 
   const currentImages = useMemo(() => {
-    if (!product) return [];
+  if (!product) return [];
 
-    // If selected variant has images,
-    // show variant images first.
-    if (
-      selectedVariant &&
-      selectedVariant.images &&
-      selectedVariant.images.length > 0
-    ) {
-      return selectedVariant.images;
-    }
+  const productImages = Array.isArray(product.images)
+    ? product.images
+    : [];
 
-    // Otherwise product images
-    return product.images || [];
-  }, [product, selectedVariant]);
+  const variantImages =
+    selectedVariant &&
+    Array.isArray(selectedVariant.images)
+      ? selectedVariant.images
+      : [];
+
+  // Common product images + selected variant images
+  return [...new Set([...productImages, ...variantImages])];
+}, [product, selectedVariant]);
 
   // =========================================================
   // RESET IMAGE WHEN VARIANT CHANGES
