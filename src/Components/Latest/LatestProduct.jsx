@@ -397,9 +397,7 @@ const LatestProducts = () => {
             : null;
 
           const image =
-            variant?.images?.[0] ||
-            product.images?.[0] ||
-            "";
+            product.images?.[0] || ""
 
           const productInWishlist =
             isInWishlist(product._id);
