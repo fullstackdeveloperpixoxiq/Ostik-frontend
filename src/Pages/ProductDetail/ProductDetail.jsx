@@ -691,7 +691,7 @@ const ProductDetail = () => {
                 LEFT - IMAGE GALLERY
             ================================================== */}
 
-            <div>
+            <div className="min-w-0">
 
               <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
 
@@ -736,7 +736,13 @@ const ProductDetail = () => {
               {/* THUMBNAILS */}
 
               {currentImages.length > 1 && (
-                <div className="mt-4 flex gap-2 overflow-x-auto pb-2 sm:mt-5 sm:gap-3">
+                <div className="mt-4 w-full min-w-0 overflow-hidden sm:mt-5">
+
+                  <div className="flex w-full max-w-full gap-2 overflow-x-auto overscroll-x-contain pb-2 sm:gap-3"
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none"
+                  }}>
 
                   {currentImages.map((image, index) => (
                     <button
@@ -758,6 +764,7 @@ const ProductDetail = () => {
                     </button>
                   ))}
 
+                </div>
                 </div>
               )}
 
