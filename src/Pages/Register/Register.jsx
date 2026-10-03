@@ -43,6 +43,8 @@ const Register = () => {
 
     e.preventDefault();
 
+    if(loading) return
+
     setLoading(true);
 
     try {
@@ -50,8 +52,17 @@ const Register = () => {
       const response =
         await axios.post(
           `${import.meta.env.VITE_API_URL}/api/user/register`,
-          formData
+          formData,{
+            timeout: 15000
+          }
         );
+        const userId= response.data?.userId
+
+        if (!userId) {
+      throw new Error(
+        "Registration succeeded but user ID was not received."
+      );
+    }
 
 
       toast.success(
@@ -62,7 +73,7 @@ const Register = () => {
       // Save user ID
       localStorage.setItem(
         "registrationUserId",
-        response.data.userId
+        userId
       );
 
 

@@ -59,6 +59,9 @@ const Navbar = () => {
   // =========================================================
 
   const lastScrollYRef = useRef(0);
+  const showLinksRef = useRef(true);
+  const scrollRafRef = useRef(null);
+  const scrollLockUntilRef = useRef(0);
 
   // =========================================================
   // PROTECTED NAVIGATION
@@ -386,39 +389,61 @@ const Navbar = () => {
   // =========================================================
   // DESKTOP NAVBAR SCROLL BEHAVIOR
   // =========================================================
-
   useEffect(() => {
+    const HIDE_LINKS_AT = 140;
+    const SHOW_LINKS_AT = 40;
+    const ANIMATION_LOCK_MS = 650;
+
     lastScrollYRef.current = window.scrollY;
+    showLinksRef.current = true;
 
-    const SHOW_LINKS_AT = 80;
-    const HIDE_LINKS_AT = 120;
+    const updateNavbar = () => {
+      scrollRafRef.current = null;
 
-    const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const previousScrollY = lastScrollYRef.current;
+      const now = performance.now();
 
-      if (currentScrollY <= SHOW_LINKS_AT) {
-        if (!showLinks) {
-          setShowLinks(true);
-        }
-
+      // Ignore scroll events caused by the navbar changing its own height.
+      // This prevents the sticky header from feeding back into the scroll
+      // position and repeatedly showing/hiding itself.
+      if (now < scrollLockUntilRef.current) {
         lastScrollYRef.current = currentScrollY;
         return;
       }
 
-      if (currentScrollY >= HIDE_LINKS_AT) {
-        if (showLinks) {
-          setShowLinks(false);
+      const scrollingDown = currentScrollY > previousScrollY + 1;
+      const scrollingUp = currentScrollY < previousScrollY - 1;
 
-          setProductsOpen(false);
-          setExpandedCategory(null);
-          setSearchOpen(false);
-        }
+      if (
+        showLinksRef.current &&
+        scrollingDown &&
+        currentScrollY >= HIDE_LINKS_AT
+      ) {
+        showLinksRef.current = false;
+        scrollLockUntilRef.current = now + ANIMATION_LOCK_MS;
+        setShowLinks(false);
 
-        lastScrollYRef.current = currentScrollY;
-        return;
+        setProductsOpen(false);
+        setExpandedCategory(null);
+        setSearchOpen(false);
+      } else if (
+        !showLinksRef.current &&
+        scrollingUp &&
+        currentScrollY <= SHOW_LINKS_AT
+      ) {
+        showLinksRef.current = true;
+        scrollLockUntilRef.current = now + ANIMATION_LOCK_MS;
+        setShowLinks(true);
       }
 
       lastScrollYRef.current = currentScrollY;
+    };
+
+    const handleScroll = () => {
+      if (scrollRafRef.current !== null) return;
+
+      scrollRafRef.current = requestAnimationFrame(updateNavbar);
     };
 
     window.addEventListener("scroll", handleScroll, {
@@ -427,9 +452,13 @@ const Navbar = () => {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
-    };
-  }, [showLinks]);
 
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current);
+        scrollRafRef.current = null;
+      }
+    };
+  }, []);
   // =========================================================
   // CLOSE MOBILE MENU WHEN DESKTOP PRODUCTS OPENS
   // =========================================================
@@ -850,10 +879,11 @@ const Navbar = () => {
         <div
           className={`
             relative
+            overflow-hidden
             border-t
             border-gray-200
             bg-white
-            transition-all
+            transition-[height,opacity]
             duration-500
             ease-[cubic-bezier(0.4,0,0.2,1)]
             ${
@@ -865,21 +895,13 @@ const Navbar = () => {
         >
 
           <div
-            className={`
+            className="
               h-[86px]
               px-8
               flex
               items-center
               justify-between
-              transition-transform
-              duration-500
-              ease-[cubic-bezier(0.4,0,0.2,1)]
-              ${
-                showLinks
-                  ? "translate-y-0"
-                  : "-translate-y-4"
-              }
-            `}
+            "
           >
 
             <nav className="flex items-center gap-14">
