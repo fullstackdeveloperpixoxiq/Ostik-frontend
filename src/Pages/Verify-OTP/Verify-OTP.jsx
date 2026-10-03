@@ -109,11 +109,11 @@ const VerifyOTP = () => {
     }
 
     // Get userId saved during registration
-    const userId = localStorage.getItem(
-      "registrationUserId"
+    const registrationId = localStorage.getItem(
+      "registrationId"
     );
 
-    if (!userId) {
+    if (!registrationId) {
       toast.error(
         "Registration session not found. Please register again."
       );
@@ -128,7 +128,7 @@ const VerifyOTP = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/user/verify-otp`,
         {
-          userId,
+          registrationId,
           otp: enteredOtp,
         }
       );
@@ -138,7 +138,7 @@ const VerifyOTP = () => {
 
       // Remove temporary registration userId
       localStorage.removeItem(
-        "registrationUserId"
+        "registrationId"
       );
 
       // Go to login

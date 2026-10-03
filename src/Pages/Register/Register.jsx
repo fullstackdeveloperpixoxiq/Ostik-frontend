@@ -38,67 +38,61 @@ const Register = () => {
     }));
   };
 
-
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
-    if(loading) return
+    if (loading) return;
 
     setLoading(true);
 
     try {
 
-      const response =
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/user/register`,
-          formData,{
-            timeout: 15000
-          }
+        const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/user/register`,
+            formData,
+            {
+                timeout: 15000
+            }
         );
-        const userId= response.data?.userId
 
-        if (!userId) {
-      throw new Error(
-        "Registration succeeded but user ID was not received."
-      );
-    }
+        const registrationId =
+            response.data?.registrationId;
 
+        if (!registrationId) {
+            throw new Error(
+                "Registration succeeded but registration ID was not received."
+            );
+        }
 
-      toast.success(
-        response.data.message
-      );
+        toast.success(
+            response.data.message
+        );
 
+        localStorage.setItem(
+            "registrationId",
+            registrationId
+        );
 
-      // Save user ID
-      localStorage.setItem(
-        "registrationUserId",
-        userId
-      );
-
-
-      // Go to OTP page
-      navigate("/verify-otp");
+        navigate("/verify-otp");
 
     } catch (error) {
 
-      console.error(
-        "Registration error:",
-        error
-      );
+        console.error(
+            "Registration error:",
+            error
+        );
 
-
-      toast.error(
-        error.response?.data?.message ||
-        "Something went wrong. Please try again."
-      );
+        toast.error(
+            error.response?.data?.message ||
+            "Something went wrong. Please try again."
+        );
 
     } finally {
 
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+};
 
   return (
     <main className="min-h-screen bg-[#F7F8F5] px-5 py-10 font-['Helvetica',_Arial,_sans-serif] flex items-center justify-center">
