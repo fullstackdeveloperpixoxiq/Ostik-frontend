@@ -703,6 +703,8 @@ const Products = () => {
           },
         }
       );
+      //update cart count immediatly
+      window.dispatchEvent(new Event("cartUpdated"))
 
       toast.success(response.data.message);
     } catch (error) {

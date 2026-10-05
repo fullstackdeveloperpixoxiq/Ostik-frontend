@@ -317,22 +317,24 @@ const Cart = () => {
                   >
                     <div className="flex gap-3 sm:gap-6">
                       {/* IMAGE */}
-                      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-50 sm:h-36 sm:w-36 sm:rounded-2xl">
-                        <img
-                          src={
-                            variant?.images?.[0] ||
-                            product?.images?.[0]
-                          }
-                          alt={product?.name || "Product"}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
 
-                        {variant?.discountPercent > 0 && (
-                          <span className="absolute left-2 top-2 rounded-full bg-green-600 px-2.5 py-1 text-[10px] font-bold text-white">
-                            {variant.discountPercent}% OFF
-                          </span>
-                        )}
-                      </div>
+                      <button
+          type="button"
+          onClick={() => navigate(`/product/${product?._id}`)}
+          className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:border-gray-200 hover:shadow-md sm:h-32 sm:w-32"
+        >
+          <img
+            src={product?.images?.[0] || ""}
+            alt={product?.name || "Product"}
+            className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-105"
+          />
+
+          {variant?.discountPercent > 0 && (
+            <span className="absolute left-2 top-2 rounded-full bg-green-600 px-2 py-1 text-[9px] font-bold text-white">
+              {variant.discountPercent}% OFF
+            </span>
+          )}
+        </button>
 
                       {/* DETAILS */}
                       <div className="min-w-0 flex-1">
