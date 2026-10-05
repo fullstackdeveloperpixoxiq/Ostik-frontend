@@ -391,7 +391,7 @@ const HotSelling = () => {
                     <img
                       src={image}
                       alt={product.name}
-                      className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full cursor-pointer transition-transform duration-500 group-hover:scale-105"
                       onClick={() =>
                         navigate(
                           `/product/${product._id}`
@@ -563,7 +563,7 @@ const HotSelling = () => {
                     <img
                       src={image}
                       alt={product.name}
-                      className="h-full w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full cursor-pointer transition-transform duration-500 group-hover:scale-105"
                       onClick={() =>
                         navigate(
                           `/product/${product._id}`
