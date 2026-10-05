@@ -1295,8 +1295,6 @@ const Checkout = () => {
 
                             <img
                               src={
-                                variant
-                                  ?.images?.[0] ||
                                 product
                                   ?.images?.[0] ||
                                 ""

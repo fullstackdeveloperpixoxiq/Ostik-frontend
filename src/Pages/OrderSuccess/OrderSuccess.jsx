@@ -358,9 +358,9 @@ const OrderSuccess = () => {
 
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-50 rounded-xl border border-gray-100 flex-shrink-0 overflow-hidden">
 
-                    {item.image ? (
+                    {(item.productId?.images?.[0] || item.image) ? (
                       <img
-                        src={item.image}
+                        src={item.productId?.images?.[0] || item.image}
                         alt={item.name}
                         className="w-full h-full object-contain"
                       />
