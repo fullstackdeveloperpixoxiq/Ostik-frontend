@@ -228,7 +228,7 @@ const Checkout = () => {
     originalTotal - subtotal;
 
   const shippingFee =
-    subtotal >= 2000 ? 0 : 99;
+    subtotal >= 999 ? 0 : 70;
 
   const grandTotal =
     subtotal + shippingFee;
