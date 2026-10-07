@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   RotateCcw,
   Check,
+  X,
   Image as ImageIcon,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -45,6 +46,10 @@ const ProductDetail = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const [cartLoading, setCartLoading] = useState(false);
+
+  const [reviewImageOpen, setReviewImageOpen]= useState(false);
+  const [selectedReviewImages, setSelectedReviewImages]= useState([]);
+  const [selectedReviewImage, setSelectedReviewImage]= useState(0);
 
   // =========================================================
   // FETCH PRODUCT
@@ -277,6 +282,42 @@ const ProductDetail = () => {
         : prev - 1
     );
   };
+
+  // =========================================================
+// REVIEW IMAGE VIEWER
+// =========================================================
+
+const openReviewImage = (images, index) => {
+  setSelectedReviewImages(images);
+  setSelectedReviewImage(index);
+  setReviewImageOpen(true);
+};
+
+const closeReviewImage = () => {
+  setReviewImageOpen(false);
+  setSelectedReviewImages([]);
+  setSelectedReviewImage(0);
+};
+
+const nextReviewImage = () => {
+  if (!selectedReviewImages.length) return;
+
+  setSelectedReviewImage((prev) =>
+    prev === selectedReviewImages.length - 1
+      ? 0
+      : prev + 1
+  );
+};
+
+const previousReviewImage = () => {
+  if (!selectedReviewImages.length) return;
+
+  setSelectedReviewImage((prev) =>
+    prev === 0
+      ? selectedReviewImages.length - 1
+      : prev - 1
+  );
+};
 
   // =========================================================
   // ADD TO CART
@@ -1346,12 +1387,25 @@ const ProductDetail = () => {
 
                         {review.images.map(
                           (image, index) => (
-                            <img
-                              key={`${image}-${index}`}
-                              src={image}
-                              alt="Customer review"
-                              className="h-20 w-20 flex-shrink-0 rounded-lg border border-gray-200 object-cover sm:h-24 sm:w-24"
-                            />
+                            <button 
+                            key={`${image}-${index}`}
+                            type="button"
+                            onClick={()=> openReviewImage(review.images,index)}
+                            className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 sm:h-24 sm:w-24"
+                            >
+                              <img src={image} 
+                              alt={`customer review ${index +1}`}
+                              className="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
+
+                              {/* VIEW ICON */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/30">
+            <span className="rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-800 opacity-0 transition group-hover:opacity-100">
+              View
+            </span>
+          </div>
+
+                            </button>
+                          
                           )
                         )}
 
@@ -1383,6 +1437,83 @@ const ProductDetail = () => {
         </section>
 
       </div>
+
+      {/* =====================================================
+          REVIEW IMAGE VIEWER
+      ====================================================== */}
+
+      {reviewImageOpen &&
+        selectedReviewImages.length > 0 && (
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
+            onClick={closeReviewImage}
+          >
+            {/* CLOSE BUTTON */}
+
+            <button
+              type="button"
+              onClick={closeReviewImage}
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-[#00ff03] hover:text-black sm:right-6 sm:top-6"
+              aria-label="Close image viewer"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {/* PREVIOUS */}
+
+            {selectedReviewImages.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  previousReviewImage();
+                }}
+                className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-[#00ff03] hover:text-black sm:left-6 sm:h-12 sm:w-12"
+                aria-label="Previous image"
+              >
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+            )}
+
+            {/* IMAGE */}
+
+            <div
+              className="relative flex max-h-[90vh] max-w-[90vw] items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedReviewImages[selectedReviewImage]}
+                alt="Customer review"
+                className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
+              />
+
+              {/* IMAGE COUNT */}
+
+              {selectedReviewImages.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-white">
+                  {selectedReviewImage + 1} /{" "}
+                  {selectedReviewImages.length}
+                </div>
+              )}
+            </div>
+
+            {/* NEXT */}
+
+            {selectedReviewImages.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextReviewImage();
+                }}
+                className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-[#00ff03] hover:text-black sm:right-6 sm:h-12 sm:w-12"
+                aria-label="Next image"
+              >
+                <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+            )}
+          </div>
+        )}
 
       <Footer />
     </>
