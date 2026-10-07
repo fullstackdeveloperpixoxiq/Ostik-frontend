@@ -202,6 +202,11 @@ const OrderSuccess = () => {
     : "";
 
   const shippingAddress = order.shippingAddress || {};
+  const expectedDeliveryFrom = order.shipping?.estimatedDeliveryFrom;
+  const expectedDeliveryTo = order.shipping?.estimatedDeliveryTo;
+
+  const deliveryFrom= formatDate(expectedDeliveryFrom)
+  const deliveryTo= formatDate(expectedDeliveryTo)
 
   return (
     <div className="min-h-screen bg-[#f8faf9] text-gray-900">
@@ -307,6 +312,51 @@ const OrderSuccess = () => {
         <div className="m-10">
           <OrderTracking order={order}/>
         </div>
+
+        {/* ==================================================
+    EXPECTED DELIVERY
+================================================== */}
+
+{deliveryFrom && deliveryTo && (
+  <div className="mt-8">
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-green-100 bg-green-50/60 px-5 py-4 sm:px-6">
+
+      <div className="flex items-center gap-3">
+
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+          <Clock3
+            size={20}
+            className="text-green-600"
+          />
+        </div>
+
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Expected Delivery
+          </p>
+
+          <p className="mt-1 text-sm font-semibold text-gray-900">
+            {deliveryFrom} - {deliveryTo}
+          </p>
+        </div>
+
+      </div>
+
+      <span className="hidden text-xs font-medium text-green-600 sm:block">
+        Estimated
+      </span>
+
+    </div>
+  </div>
+)}
+
+{/* ==================================================
+    ORDER TRACKING
+================================================== */}
+
+<div className="mt-6">
+  <OrderTracking order={order} />
+</div>
 
 
         {/* ==================================================

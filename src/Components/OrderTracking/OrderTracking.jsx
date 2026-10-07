@@ -56,12 +56,6 @@ const OrderTracking = ({ order }) => {
       icon: ShoppingBag,
     },
     {
-      key: "processing",
-      label: "Processing",
-      description: "Preparing your order",
-      icon: Package,
-    },
-    {
       key: "packed",
       label: "Packed",
       description: "Package is ready",
@@ -89,7 +83,7 @@ const OrderTracking = ({ order }) => {
 
   const statusMap = {
     pending: "pending",
-    processing: "processing",
+    processing: "packed",
     packed: "packed",
     shipped: "shipped",
     "out for delivery": "out_for_delivery",
@@ -112,11 +106,11 @@ const OrderTracking = ({ order }) => {
   // EXPECTED DELIVERY
   // =========================================================
 
-  const expectedDelivery =
-    order.expectedDeliveryDate ||
-    order.estimatedDeliveryDate ||
-    order.deliveryDate ||
-    null;
+  const expectedDeliveryFrom =
+  order.shipping?.estimatedDeliveryFrom || null;
+
+  const expectedDeliveryTo =
+  order.shipping?.estimatedDeliveryTo || null;
 
   const formatDate = (date) => {
     if (!date) return null;
@@ -134,7 +128,9 @@ const OrderTracking = ({ order }) => {
     });
   };
 
-  const deliveryDate = formatDate(expectedDelivery);
+  const deliveryFrom = formatDate(expectedDeliveryFrom);
+  const deliveryTo = formatDate(expectedDeliveryTo);
+  const deliveredDate = formatDate(order.deliveredAt);
 
   // =========================================================
   // RETURN / EXCHANGE
@@ -418,6 +414,70 @@ const OrderTracking = ({ order }) => {
                 not be processed or delivered.
               </p>
 
+              {/* cancelation details */}
+              {order.cancellation && (
+                <div className="mt-6 rounded-2xl border border-red-100 bg-red-50/50 p-5 text-left">
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Cancellation Details
+                  </h4>
+
+                  {/* Reason */}
+                  {order.cancellation.reason && (
+                    <div className="mt-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                        Reason
+                      </p>
+
+                       <p className="mt-1 text-sm font-medium text-gray-800">
+                {order.cancellation.reason}
+              </p>
+
+                    </div>
+                  )}
+
+                  {/* comment */}
+                  {order.cancellation.comment && (
+                    <div className="mt-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                        Additional Details
+                      </p>
+                      
+                      <p className="mt-1 text-sm leading-6 text-gray-700">
+                        {order.cancellation.comment}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* cancelledBy */}
+                  {order.cancellation.cancelledBy && (
+            <div className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Cancelled By
+              </p>
+
+              <p className="mt-1 text-sm font-medium capitalize text-gray-800">
+                {order.cancellation.cancelledBy}
+              </p>
+            </div>
+          )}
+
+          {/* Cancelled Date */}
+
+          {order.cancellation.cancelledAt && (
+            <div className="mt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Cancelled On
+              </p>
+
+              <p className="mt-1 text-sm font-medium text-gray-800">
+                {formatDate(order.cancellation.cancelledAt)}
+              </p>
+            </div>
+          )}
+                  
+                </div>
+              )}
+
               <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-gray-50 px-4 py-2.5">
                 <CircleCheck
                   size={15}
@@ -436,7 +496,8 @@ const OrderTracking = ({ order }) => {
                 EXPECTED DELIVERY
             ================================================ */}
 
-            {deliveryDate &&
+            {deliveryFrom &&
+            deliveryTo &&
               trackingStatus !== "delivered" && (
                 <div className="px-5 pt-5 sm:px-7">
                   <div className="flex items-center justify-between gap-4 rounded-xl border border-green-100 bg-green-50/50 px-4 py-3.5">
@@ -455,7 +516,7 @@ const OrderTracking = ({ order }) => {
                         </p>
 
                         <p className="mt-0.5 text-sm font-semibold text-gray-900">
-                          {deliveryDate}
+                          {deliveryFrom} - {deliveryTo}
                         </p>
                       </div>
                     </div>
@@ -466,6 +527,43 @@ const OrderTracking = ({ order }) => {
                   </div>
                 </div>
               )}
+
+              {/* ===================================================
+    DELIVERED DATE
+================================================ */}
+
+{trackingStatus === "delivered" && deliveredDate && (
+  <div className="px-5 pt-5 sm:px-7">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-green-100 bg-green-50/50 px-4 py-3.5">
+
+      <div className="flex items-center gap-3">
+
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+          <CircleCheck
+            size={18}
+            className="text-green-600"
+          />
+        </div>
+
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Delivered On
+          </p>
+
+          <p className="mt-0.5 text-sm font-semibold text-gray-900">
+            {deliveredDate}
+          </p>
+        </div>
+
+      </div>
+
+      <span className="hidden text-[10px] font-medium text-green-600 sm:block">
+        Successfully Delivered
+      </span>
+
+    </div>
+  </div>
+)}
 
             {/* ===============================================
                 DESKTOP TIMELINE
@@ -487,11 +585,11 @@ const OrderTracking = ({ order }) => {
                     width:
                       safeIndex === 0
                         ? "0%"
-                        : `${(safeIndex / 5) * 83}%`,
+                        : `${(safeIndex / (steps.length -1 )) * 83}%`,
                   }}
                 />
 
-                <div className="relative grid grid-cols-6">
+                <div className="relative grid grid-cols-5">
 
                   {steps.map((step, index) => {
                     const Icon = step.icon;
@@ -645,7 +743,7 @@ const OrderTracking = ({ order }) => {
                     height:
                       safeIndex === 0
                         ? "0%"
-                        : `${(safeIndex / 5) * 100}%`,
+                        : `${(safeIndex / (steps.length - 1)) * 100}%`,
                   }}
                 />
 

@@ -17,7 +17,7 @@ import {
 
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
-import OrderTracking from "../OrderTracking/OrderTracking"
+import OrderTracking from "../OrderTracking/OrderTracking";
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -108,7 +108,6 @@ const OrderDetails = () => {
   };
 
   // =========================================================
-  // =========================================================
   // FETCH MY EXCHANGES
   // =========================================================
 
@@ -120,7 +119,9 @@ const OrderDetails = () => {
         `${import.meta.env.VITE_API_URL}/api/exchange`,
         {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -131,11 +132,13 @@ const OrderDetails = () => {
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+
         navigate("/login");
       }
     }
   };
 
+  // =========================================================
   // INITIAL LOAD
   // =========================================================
 
@@ -212,6 +215,14 @@ const OrderDetails = () => {
             "bg-red-50 text-red-700 border-red-200",
         };
 
+      case "Returned":
+      case "Retured":
+        return {
+          icon: RefreshCcw,
+          className:
+            "bg-orange-50 text-orange-700 border-orange-200",
+        };
+
       default:
         return {
           icon: Clock3,
@@ -241,14 +252,16 @@ const OrderDetails = () => {
   };
 
   // =========================================================
-  // =========================================================
   // GET EXCHANGE FOR SPECIFIC ORDER ITEM
   // =========================================================
 
   const getExchangeForItem = (orderId, itemId) => {
     return myExchanges.find((exchangeRequest) => {
-      const exchangeOrderId = exchangeRequest.order?._id || exchangeRequest.order;
-      const exchangeItemId = exchangeRequest.item?.orderItemId;
+      const exchangeOrderId =
+        exchangeRequest.order?._id || exchangeRequest.order;
+
+      const exchangeItemId =
+        exchangeRequest.item?.orderItemId;
 
       return (
         String(exchangeOrderId) === String(orderId) &&
@@ -264,29 +277,77 @@ const OrderDetails = () => {
   const getExchangeStatusDetails = (status) => {
     switch (status) {
       case "Pending":
-        return { label: "Exchange Requested", className: "bg-amber-50 text-amber-700 border-amber-200" };
+        return {
+          label: "Exchange Requested",
+          className:
+            "bg-amber-50 text-amber-700 border-amber-200",
+        };
+
       case "Approved":
-        return { label: "Exchange Approved", className: "bg-blue-50 text-blue-700 border-blue-200" };
+        return {
+          label: "Exchange Approved",
+          className:
+            "bg-blue-50 text-blue-700 border-blue-200",
+        };
+
       case "Pickup Scheduled":
-        return { label: "Exchange Pickup Scheduled", className: "bg-purple-50 text-purple-700 border-purple-200" };
+        return {
+          label: "Exchange Pickup Scheduled",
+          className:
+            "bg-purple-50 text-purple-700 border-purple-200",
+        };
+
       case "Received":
-        return { label: "Exchange Product Received", className: "bg-indigo-50 text-indigo-700 border-indigo-200" };
+        return {
+          label: "Exchange Product Received",
+          className:
+            "bg-indigo-50 text-indigo-700 border-indigo-200",
+        };
+
       case "Replacement Shipped":
-        return { label: "Replacement Shipped", className: "bg-cyan-50 text-cyan-700 border-cyan-200" };
+        return {
+          label: "Replacement Shipped",
+          className:
+            "bg-cyan-50 text-cyan-700 border-cyan-200",
+        };
+
       case "Completed":
-        return { label: "Exchange Completed", className: "bg-green-50 text-green-700 border-green-200" };
+        return {
+          label: "Exchange Completed",
+          className:
+            "bg-green-50 text-green-700 border-green-200",
+        };
+
       case "Rejected":
-        return { label: "Exchange Rejected", className: "bg-red-50 text-red-700 border-red-200" };
+        return {
+          label: "Exchange Rejected",
+          className:
+            "bg-red-50 text-red-700 border-red-200",
+        };
+
       case "Cancelled":
-        return { label: "Exchange Cancelled", className: "bg-gray-50 text-gray-600 border-gray-200" };
+        return {
+          label: "Exchange Cancelled",
+          className:
+            "bg-gray-50 text-gray-600 border-gray-200",
+        };
+
       default:
         return null;
     }
   };
 
   const isExchangeActive = (status) =>
-    ["Pending", "Approved", "Pickup Scheduled", "Received", "Replacement Shipped", "Completed"].includes(status);
+    [
+      "Pending",
+      "Approved",
+      "Pickup Scheduled",
+      "Received",
+      "Replacement Shipped",
+      "Completed",
+    ].includes(status);
 
+  // =========================================================
   // RETURN STATUS DETAILS
   // =========================================================
 
@@ -475,10 +536,112 @@ const OrderDetails = () => {
             </div>
           </div>
 
-          {/* order tracking */}
-              <div className="m-10">
-                <OrderTracking order={order}/>
-              </div>
+          {/* ORDER TRACKING */}
+
+          <div className="m-10">
+            <OrderTracking order={order} />
+          </div>
+
+          {/* =========================================================
+    CANCELLATION DETAILS
+========================================================= */}
+
+{order.orderStatus === "Cancelled" &&
+  order.cancellation && (
+    <div className="mb-6 rounded-2xl border border-red-100 bg-white p-5 shadow-sm sm:p-6">
+
+      <div className="flex items-start gap-3">
+
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50">
+          <XCircle
+            size={20}
+            className="text-red-500"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+
+          <h2 className="font-semibold text-gray-900">
+            Cancellation Details
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            This order was cancelled and will not be processed or delivered.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+
+        {/* Reason */}
+
+        {order.cancellation.reason && (
+          <div className="rounded-xl bg-gray-50 p-4">
+
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Reason
+            </p>
+
+            <p className="mt-1 text-sm font-medium text-gray-900">
+              {order.cancellation.reason}
+            </p>
+
+          </div>
+        )}
+
+        {/* Cancelled By */}
+
+        {order.cancellation.cancelledBy && (
+          <div className="rounded-xl bg-gray-50 p-4">
+
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Cancelled By
+            </p>
+
+            <p className="mt-1 text-sm font-medium capitalize text-gray-900">
+              {order.cancellation.cancelledBy}
+            </p>
+
+          </div>
+        )}
+
+      </div>
+
+      {/* Comment */}
+
+      {order.cancellation.comment && (
+        <div className="mt-4 rounded-xl bg-gray-50 p-4">
+
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Additional Details
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-gray-700">
+            {order.cancellation.comment}
+          </p>
+
+        </div>
+      )}
+
+      {/* Date */}
+
+      {order.cancellation.cancelledAt && (
+        <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
+
+          <CalendarDays size={14} />
+
+          <span>
+            Cancelled on{" "}
+            {formatDate(order.cancellation.cancelledAt)}
+          </span>
+
+        </div>
+      )}
+
+    </div>
+  )}
 
           {/* PRODUCTS */}
 
@@ -494,7 +657,6 @@ const OrderDetails = () => {
 
               {order.items?.map((item) => {
 
-                // Find return request for this exact order item
                 const returnRequest = getReturnForItem(
                   order._id,
                   item._id
@@ -512,7 +674,9 @@ const OrderDetails = () => {
                   : null;
 
                 const exchangeStatus = exchangeRequest
-                  ? getExchangeStatusDetails(exchangeRequest.status)
+                  ? getExchangeStatusDetails(
+                      exchangeRequest.status
+                    )
                   : null;
 
                 const ReturnStatusIcon =
@@ -528,7 +692,9 @@ const OrderDetails = () => {
 
                 const hasActiveExchange =
                   exchangeRequest &&
-                  isExchangeActive(exchangeRequest.status);
+                  isExchangeActive(
+                    exchangeRequest.status
+                  );
 
                 return (
                   <div
@@ -626,34 +792,32 @@ const OrderDetails = () => {
                         {order.orderStatus === "Delivered" && (
                           <div className="mt-4 flex flex-wrap gap-2">
 
-                            {/* If active return exists,
-                                don't allow another request */}
+                            {!hasActiveReturn &&
+                              !hasActiveExchange && (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/orders/${order._id}/return/${item._id}`
+                                      )
+                                    }
+                                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-orange-300 hover:bg-orange-50"
+                                  >
+                                    Return
+                                  </button>
 
-                            {!hasActiveReturn && !hasActiveExchange && (
-                              <>
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/orders/${order._id}/return/${item._id}`
-                                    )
-                                  }
-                                  className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-orange-300 hover:bg-orange-50"
-                                >
-                                  Return
-                                </button>
-
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/orders/${order._id}/exchange/${item._id}`
-                                    )
-                                  }
-                                  className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-300 hover:bg-blue-50"
-                                >
-                                  Exchange
-                                </button>
-                              </>
-                            )}
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/orders/${order._id}/exchange/${item._id}`
+                                      )
+                                    }
+                                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-300 hover:bg-blue-50"
+                                  >
+                                    Exchange
+                                  </button>
+                                </>
+                              )}
 
                           </div>
                         )}

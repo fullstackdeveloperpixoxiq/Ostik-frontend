@@ -23,7 +23,7 @@ const Checkout = () => {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [updatingVariantId, setUpdatingVariantId] = useState(null);
 
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
   const [savedAddresses, setSavedAddresses] = useState([]);
 
   // Selected previous address
@@ -1041,60 +1041,54 @@ const Checkout = () => {
 
                 {/* RAZORPAY */}
 
-                <label
-                  className={`block border rounded-2xl p-4 cursor-pointer transition ${
-                    paymentMethod ===
-                    "razorpay"
-                      ? "border-black bg-gray-50"
-                      : "border-gray-200 hover:border-gray-400"
-                  }`}
-                >
+<div className="border border-gray-200 rounded-2xl p-4 bg-gray-50 opacity-70 cursor-not-allowed">
+  <div className="flex items-start gap-4">
 
-                  <div className="flex items-center gap-4">
+    {/* disabled  radio */}
+    <div className="pt-1 shrink-0">
+      <input
+      type="radio"
+      name="paymentMethod"
+      value="razorpay"
+      disabled
+      className="w-4 h-4 accent-gray-400 mt-1"
+    />
+    </div>
 
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="razorpay"
-                      checked={
-                        paymentMethod ===
-                        "razorpay"
-                      }
-                      onChange={(event) =>
-                        setPaymentMethod(
-                          event.target.value
-                        )
-                      }
-                      className="w-4 h-4 accent-black"
-                    />
+    {/* content */}
+    <div className="flex-1 min-w-0">
 
-                    <div className="flex-1">
+      <div className="flex items-start justify-between gap-2">
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+        <div>
+          <p className="font-semibold text-gray-700">
+            Online Payment
+          </p>
 
-                        <div>
+          <p className="text-sm text-gray-500 mt-1">
+            UPI, Cards, Net Banking & Wallets
+          </p>
+        </div>
 
-                          <p className="font-semibold text-gray-900">
-                            Online Payment
-                          </p>
+        <span className="text-xs font-medium bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
+          Coming Soon
+        </span>
 
-                          <p className="text-sm text-gray-500 mt-1">
-                            UPI, Cards, Net Banking & Wallets
-                          </p>
+      </div>
 
-                        </div>
+      <div className="mt-3 rounded-lg bg-white border border-gray-200 px-3 py-2.5">
+        <p className="text-xs text-gray-500 leading-relaxed">
+          Online payment is temporarily unavailable.
+          We are completing our payment setup and will make
+          this option available soon.
+        </p>
+      </div>
 
-                        <span className="text-xs font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                          Recommended
-                        </span>
+    </div>
 
-                      </div>
+  </div>
+</div>
 
-                    </div>
-
-                  </div>
-
-                </label>
 
                 {/* COD */}
 
