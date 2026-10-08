@@ -261,15 +261,6 @@ const Footer = () => {
                 </a>
               </li>
 
-              <li>
-                <a
-                  href="/blogs"
-                  className="transition hover:text-[#00ff03]"
-                >
-                  Blogs
-                </a>
-              </li>
-
             </ul>
 
           </div>
@@ -289,7 +280,7 @@ const Footer = () => {
 
               <li>
                 <a
-                  href="/my-account"
+                  href="/profile"
                   className="transition hover:text-[#00ff03]"
                 >
                   My Account
@@ -307,7 +298,7 @@ const Footer = () => {
 
               <li>
                 <a
-                  href="/shipping"
+                  href="/shippingPolicy"
                   className="transition hover:text-[#00ff03]"
                 >
                   Shipping Policy
@@ -316,19 +307,10 @@ const Footer = () => {
 
               <li>
                 <a
-                  href="/returns"
+                  href="/return&refund"
                   className="transition hover:text-[#00ff03]"
                 >
                   Returns & Refunds
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="/warranty"
-                  className="transition hover:text-[#00ff03]"
-                >
-                  Warranty
                 </a>
               </li>
 

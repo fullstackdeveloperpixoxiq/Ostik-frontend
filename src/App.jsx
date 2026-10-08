@@ -25,6 +25,8 @@ import ReturnDetails from './Pages/Return/ReturnDetails'
 import ExchangeDetails from './Pages/Exchange/ExchangeDetails'
 import Offers from './Pages/Offers/Offers'
 import Bundles from './Pages/Bundle/Bundle'
+import ShippingPolicy from './Pages/ShippingPolicy/ShippingPolicy'
+import ReturnAndRefund from './Pages/ReturnAndRefund/ReturnAndRefund'
 
 function App() {
 
@@ -158,6 +160,16 @@ function App() {
       <Route
       path='/bundles'
       element={<Bundles/>}
+      />
+
+    <Route
+      path='/shippingPolicy'
+      element={<ShippingPolicy/>}
+      />
+
+    <Route
+      path='/return&refund'
+      element={<ReturnAndRefund/>}
       />
     </Routes>
     </>
