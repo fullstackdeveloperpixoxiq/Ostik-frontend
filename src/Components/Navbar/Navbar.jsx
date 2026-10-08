@@ -878,8 +878,8 @@ const Navbar = () => {
 
         <div
           className={`
-            relative
-            overflow-hidden
+            relative
+            overflow-visible
             border-t
             border-gray-200
             bg-white
