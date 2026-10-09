@@ -1395,7 +1395,12 @@ const Orders = () => {
                                       alt={
                                         item.name
                                       }
-                                      className="h-full w-full object-contain p-2"
+                                      onClick={()=>{ 
+                                        if (item.productId) {
+                                       navigate(`/product/${item.productId}`);
+        }
+                                      }}
+                                      className={`h-full w-full object-contain p-2 ${item.productId ? "cursor-pointer" : ""}`}
                                     />
 
                                   ) : (
