@@ -1161,7 +1161,7 @@ const Orders = () => {
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
                       activeFilter ===
                       filter
-                        ? "bg-[#00ff03] text-white shadow-sm"
+                        ? "bg-[#00ff03] text-black shadow-sm"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     }`}
                   >
