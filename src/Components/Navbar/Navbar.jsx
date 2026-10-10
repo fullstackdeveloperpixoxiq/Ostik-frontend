@@ -24,6 +24,8 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLinks, setShowLinks] = useState(true);
 
+  const [mobileHeaderVisible, setMobileHeaderVisible]= useState(true);
+
   // Desktop Products dropdown
   const [productsOpen, setProductsOpen] = useState(false);
 
@@ -62,6 +64,7 @@ const Navbar = () => {
   const showLinksRef = useRef(true);
   const scrollRafRef = useRef(null);
   const scrollLockUntilRef = useRef(0);
+  const lastMobileScrollYRef = useRef(0);
 
   // =========================================================
   // PROTECTED NAVIGATION
@@ -480,18 +483,68 @@ const Navbar = () => {
     }
   }, [menuOpen]);
 
+  
+useEffect(() => {
+  const handleMobileScroll = () => {
+    // Desktop behavior should remain unchanged.
+    if (window.innerWidth >= 1280) return;
+
+    // Keep the header visible while the menu is open.
+    if (menuOpen) {
+      setMobileHeaderVisible(true);
+      return;
+    }
+
+    const currentY = window.scrollY;
+    const previousY = lastMobileScrollYRef.current;
+
+    if (currentY < 10 || currentY < previousY - 2) {
+      // At the top or scrolling up
+      setMobileHeaderVisible(true);
+    } else if (currentY > previousY + 2 && currentY > 80) {
+      // Scrolling down
+      setMobileHeaderVisible(false);
+    }
+
+    lastMobileScrollYRef.current = currentY;
+  };
+
+  lastMobileScrollYRef.current = window.scrollY;
+
+  window.addEventListener("scroll", handleMobileScroll, {
+    passive: true,
+  });
+
+  return () => {
+    window.removeEventListener("scroll", handleMobileScroll);
+  };
+}, [menuOpen]);
+
   return (
+    <>
     <header
-      className="
-        sticky
+      className={`
+        fixed
         top-0
+        xl:sticky
+        xl:top-0
         z-[100]
         w-full
         bg-[#000000]
         border-b
         border-gray-200
         font-['Helvetica',_Arial,_sans-serif]
-      "
+        transition-[transform, opacity]
+        duration-500
+        ease-in-out
+        will-change-transform
+        ${mobileHeaderVisible ? "translate-y-0 opacity-100" :
+          "-translate-y-4 opacity-0 pointer-events-none"
+        }
+        xl:translate-y-0
+        xl:oppacity-100
+        xl:pointer-events-auto
+      `}
     >
 
       {/* =====================================================
@@ -878,7 +931,8 @@ const Navbar = () => {
 
         <div
           className={`
-            relative
+            relative
+
             overflow-visible
             border-t
             border-gray-200
@@ -1308,6 +1362,7 @@ const Navbar = () => {
 
         <div
           className="
+          relative
             h-[78px]
             px-4
             flex
@@ -1341,14 +1396,18 @@ const Navbar = () => {
 
           <a
             href="/"
-            className="flex items-center"
+            className="absolute 
+            left-1/2
+            -translate-x-1/2
+            flex
+            items-center"
           >
 
             <img
               src="/OstikLogo/OSTIK_PNG.png"
               alt="OSTIK"
               className="
-                w-[150px]
+                w-[110px]
                 h-auto
                 object-contain
                 drop-shadow-[0_8px_8px_rgba(0,0,0,0.18)]
@@ -1403,20 +1462,6 @@ const Navbar = () => {
 
             </button>
 
-            <button
-              type="button"
-              onClick={() => navigate("/register")}
-              className="text-white"
-              aria-label="Profile"
-            >
-
-              <UserRound
-                size={23}
-                strokeWidth={1.8}
-                className="text-white"
-              />
-
-            </button>
 
             <button
               type="button"
@@ -1464,13 +1509,15 @@ const Navbar = () => {
 
         {/* MOBILE SEARCH */}
 
-        <div className="px-4 pb-3">
+        <div className="px-4 pb-3 flex justify-center">
 
           <div
             data-search-container
             className="
               relative
               w-full
+              max-w-[360px]
+              sm:max-w-[420px]
             "
           >
 
@@ -1686,6 +1733,26 @@ const Navbar = () => {
           >
 
             <nav className="flex flex-col gap-5">
+
+              {/* MOBILE PRODUCTS */}
+              <button type="button"
+              onClick={()=>{
+                setMenuOpen(false)
+                navigate("/register")
+              }}
+              className="flex
+              item-center
+              gap-3
+              text-left
+              text-lg
+              font-semibold
+              text-gray-600
+              hover:text-[#00e603]
+              transition-colors"
+              >
+                <UserRound size={20}/>
+                <span>Register</span>
+              </button>
 
               <a
                 href="/"
@@ -2026,6 +2093,8 @@ const Navbar = () => {
       </div>
 
     </header>
+    <div className="h-[140px] xl:hidden" aria-hidden="true"></div>
+    </>
   );
 };
 

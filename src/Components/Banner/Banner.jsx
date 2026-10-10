@@ -55,7 +55,7 @@ const SuperBanner = () => {
 
   if (loading) {
     return (
-      <div className="h-[300px] w-full animate-pulse bg-gray-100 sm:h-[450px]" />
+      <div className="h-[360px] w-full animate-pulse bg-gray-100 sm:h-[450px]" />
     );
   }
 
@@ -69,13 +69,13 @@ const SuperBanner = () => {
     <section className="relative w-full overflow-hidden">
 
       {/* Banner */}
-      <div className="relative h-[300px] w-full sm:h-auto">
+      <div className="relative h-[280px] w-full bg-black sm:h-auto">
 
         {/* Image */}
         <img
           src={banner.image}
           alt={banner.title}
-          className="absolute inset-0 h-full w-full object-cover sm:static sm:h-auto sm:w-full sm:object-contain"
+          className="absolute inset-0 h-full w-full sm:static sm:h-auto sm:w-full"
         />
 
         {/* Dark shade */}
