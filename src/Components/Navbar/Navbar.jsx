@@ -908,7 +908,7 @@ useEffect(() => {
                     h-[21px]
                     rounded-full
                     bg-[#00ff03]
-                    text-black
+                    text-red-600
                     text-[11px]
                     font-bold
                     flex
@@ -1490,7 +1490,7 @@ useEffect(() => {
                   h-[20px]
                   rounded-full
                   bg-[#00ff03]
-                  text-white
+                  text-red-600
                   text-[10px]
                   font-bold
                   flex

@@ -23,7 +23,7 @@ function PromoCarousel() {
           style={{ animation: "ostik-marquee 25s linear infinite" }}
         >
           <div className="flex items-center gap-8 sm:gap-14 pr-8 sm:pr-14 text-sm sm:text-lg font-bold tracking-wide">
-            <span>Free shipping on orders above ₹999</span>
+            <span>Free shipping on orders above ₹100000</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
             className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Secure Payments</span>
@@ -38,7 +38,7 @@ function PromoCarousel() {
             className="flex items-center gap-14 pr-14 text-lg font-bold tracking-wide"
             aria-hidden="true"
           >
-            <span>Free shipping on orders above ₹999</span>
+            <span>Free shipping on orders above ₹100000</span>
             <img src="\OstikLogo\OSTIK_PNG.png" alt="LOGO" 
             className="w-[38px] sm:w-[50px] h-auto object-contain"/>
             <span>Secure Payments</span>

@@ -187,7 +187,7 @@ const Cart = () => {
 
   const totalSavings = originalTotal - subtotal;
 
-  const shipping = subtotal >= 999 || subtotal === 0 ? 0 : 70;
+  const shipping = subtotal >= 100000 || subtotal === 0 ? 0 : 70;
 
   const grandTotal = subtotal + shipping;
 

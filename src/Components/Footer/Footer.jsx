@@ -81,7 +81,7 @@ const Footer = () => {
 
           <div>
 
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#00ff03]">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-[#00CC02]">
               Stay Connected
             </p>
 
@@ -114,7 +114,7 @@ const Footer = () => {
               type="button"
               onClick={handleSubscribe}
               disabled={loading}
-              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-[#F5F5F5] transition hover:bg-[#00cc02] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-r-lg bg-[#00ff03] px-5 py-3 text-sm font-semibold text-[#000000] transition hover:bg-[#00cc02] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Subscribing..." : "Subscribe"}
             </button>
@@ -142,7 +142,7 @@ const Footer = () => {
             <div className="mb-5">
 
               <img
-                src="\OstikLogo\OSTIK_PNG.png"
+                src="\OstikLogo\osticLogo2.png"
                 alt="LOGO"
                 className="h-auto w-[130px] object-contain sm:w-[150px]"
               />
