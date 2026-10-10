@@ -71,7 +71,7 @@ const ShippingPolicy = () => {
             <div>
               <p className="text-sm text-gray-500">Free Shipping</p>
               <p className="mt-1 text-lg font-semibold text-gray-900">
-                ₹999+
+                100000+
               </p>
             </div>
           </div>
@@ -83,7 +83,7 @@ const ShippingPolicy = () => {
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Below ₹999</p>
+              <p className="text-sm text-gray-500">Below 100000</p>
               <p className="mt-1 text-lg font-semibold text-gray-900">
                 ₹70 Shipping
               </p>
@@ -218,12 +218,12 @@ const ShippingPolicy = () => {
                 </div>
 
                 <div className="grid grid-cols-2 border-t border-gray-200 px-5 py-4 text-sm text-gray-600">
-                  <span>Below ₹999</span>
+                  <span>Below 100000</span>
                   <span className="font-semibold text-gray-900">₹70</span>
                 </div>
 
                 <div className="grid grid-cols-2 border-t border-gray-200 px-5 py-4 text-sm text-gray-600">
-                  <span>₹999 and above</span>
+                  <span>100000 and above</span>
                   <span className="font-semibold text-[#00d803]">
                     Free Shipping
                   </span>
@@ -621,8 +621,8 @@ const ShippingPolicy = () => {
                     Is shipping free on all orders?
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-gray-600">
-                    Orders with a subtotal of ₹999 or above are eligible for
-                    free shipping. Orders below ₹999 have a shipping charge of
+                    Orders with a subtotal of ₹100000 or above are eligible for
+                    free shipping. Orders below ₹100000 have a shipping charge of
                     ₹70.
                   </p>
                 </div>
