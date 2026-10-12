@@ -1516,15 +1516,15 @@ useEffect(() => {
             className="
               relative
               w-full
-              max-w-[360px]
-              sm:max-w-[420px]
+              max-w-[300px]
+              sm:max-w-[380px]
             "
           >
 
             <div
               className="
-                h-[50px]
-                w-full
+                h-[40px]
+                w-full  
                 flex
                 items-center
                 border
@@ -1568,7 +1568,7 @@ useEffect(() => {
                 onClick={handleSearchSubmit}
                 className="
                   h-full
-                  w-[68px]
+                  w-[48px]
                   shrink-0
                   flex
                   items-center

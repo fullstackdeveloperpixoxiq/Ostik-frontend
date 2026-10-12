@@ -411,7 +411,6 @@ const Wishlist = () => {
                 */
 
                 const image =
-                  variant?.images?.[0] ||
                   product.images?.[0] ||
                   "";
 
