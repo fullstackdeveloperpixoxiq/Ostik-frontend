@@ -19,6 +19,11 @@ const Cart = () => {
   const [updatingVariantId, setUpdatingVariantId] = useState(null);
   const [removingVariantId, setRemovingVariantId] = useState(null);
   const [clearingCart, setClearingCart] = useState(false);
+  const [shippingSettings, setShippingSettings]= useState({
+  freeDeliveryEnabled: true,
+  freeDeliveryThreshold: 100000,
+  standardShippingFee: 40,
+  })
 
   const navigate= useNavigate()
 
@@ -56,9 +61,28 @@ const Cart = () => {
     }
   };
 
+
+
+  //fetch shipping datas
+  const fetchShippingSettings = async () => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/settings/shipping`
+    );
+
+    if (response.data.success && response.data.settings) {
+      setShippingSettings(response.data.settings);
+    }
+  } catch (error) {
+    console.error("Failed to fetch shipping settings:", error);
+  }
+};
+
   useEffect(() => {
     fetchCart();
+    fetchShippingSettings()
   }, []);
+
 
   // CALCULATE FINAL PRICE
   const getFinalPrice = (variant) => {
@@ -187,9 +211,15 @@ const Cart = () => {
 
   const totalSavings = originalTotal - subtotal;
 
-  const shipping = subtotal >= 100000 || subtotal === 0 ? 0 : 70;
+  const shipping =
+  subtotal === 0
+    ? 0
+    : shippingSettings.freeDeliveryEnabled &&
+        subtotal >= Number(shippingSettings.freeDeliveryThreshold)
+      ? 0
+      : Number(shippingSettings.standardShippingFee);
 
-  const grandTotal = subtotal + shipping;
+const grandTotal = subtotal + shipping;
 
   // LOADING
   if (loading) {
@@ -233,6 +263,7 @@ const Cart = () => {
 
             <button
               type="button"
+              onClick={()=> navigate("/products")}
               className="mt-7 inline-flex items-center gap-2 rounded-full bg-gray-900 px-7 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-green-600 hover:shadow-lg"
             >
               Explore Products

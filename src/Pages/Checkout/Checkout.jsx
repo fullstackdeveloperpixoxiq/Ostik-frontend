@@ -26,6 +26,12 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [savedAddresses, setSavedAddresses] = useState([]);
 
+  const [shippingSettings, setShippingSettings] = useState({
+  freeDeliveryEnabled: true,
+  freeDeliveryThreshold: 100000,
+  standardShippingFee: 40,
+});
+
   // Selected previous address
   const [selectedAddressIndex, setSelectedAddressIndex] =
     useState(null);
@@ -117,6 +123,22 @@ const Checkout = () => {
     }
   };
 
+
+  //fetch shipping datas
+  const fetchShippingSettings = async () => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/settings/shipping`
+    );
+
+    if (response.data?.success && response.data?.settings) {
+      setShippingSettings(response.data.settings);
+    }
+  } catch (error) {
+    console.error("Fetch shipping settings error:", error);
+  }
+};
+
   // -----------------------------------------
   // FETCH DATA
   // -----------------------------------------
@@ -124,6 +146,7 @@ const Checkout = () => {
   useEffect(() => {
     fetchCart();
     fetchSavedAddresses();
+    fetchShippingSettings()
   }, []);
 
   // -----------------------------------------
@@ -228,10 +251,15 @@ const Checkout = () => {
     originalTotal - subtotal;
 
   const shippingFee =
-    subtotal >= 100000 ? 0 : 70;
+  subtotal === 0
+    ? 0
+    : shippingSettings.freeDeliveryEnabled &&
+        subtotal >=
+          Number(shippingSettings.freeDeliveryThreshold)
+      ? 0
+      : Number(shippingSettings.standardShippingFee);
 
-  const grandTotal =
-    subtotal + shippingFee;
+const grandTotal = subtotal + shippingFee;
 
   // -----------------------------------------
   // UPDATE CART QUANTITY
