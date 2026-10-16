@@ -976,43 +976,54 @@ const OrderDetails = () => {
 
           {/* TRACKING */}
 
-          {order.trackingNumber && (
-            <div className="mt-5 rounded-2xl border border-green-100 bg-green-50/50 p-5">
+{(order.shipping?.trackingNumber || order.trackingNumber) &&
+  order.orderStatus !== "Cancelled" && (
+    <div className="mt-5 rounded-2xl border border-green-100 bg-green-50/50 p-5">
 
-              <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        <Truck size={18} className="text-green-600" />
 
-                <Truck
-                  size={18}
-                  className="text-green-600"
-                />
+        <h2 className="font-semibold text-gray-900">
+          Tracking Information
+        </h2>
+      </div>
 
-                <h2 className="font-semibold text-gray-900">
-                  Tracking Information
-                </h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
 
-              </div>
+        {/* COURIER NAME */}
 
-              <div className="mt-3 text-sm text-gray-600">
+        <div className="rounded-xl border border-green-100 bg-white p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Courier Partner
+          </p>
 
-                <p>
-                  Tracking Number:{" "}
-                  <span className="font-medium text-gray-900">
-                    {order.trackingNumber}
-                  </span>
-                </p>
+          <p className="mt-1 font-semibold text-gray-900">
+            {order.shipping?.carrier || order.carrier || "Not specified"}
+          </p>
+        </div>
 
-                {order.carrier && (
-                  <p className="mt-1">
-                    Carrier:{" "}
-                    <span className="font-medium text-gray-900">
-                      {order.carrier}
-                    </span>
-                  </p>
-                )}
+        {/* TRACKING ID */}
 
-              </div>
-            </div>
-          )}
+        <div className="rounded-xl border border-green-100 bg-white p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            Tracking Number / AWB
+          </p>
+
+          <p className="mt-1 break-all font-semibold text-gray-900">
+            {order.shipping?.trackingNumber || order.trackingNumber}
+          </p>
+        </div>
+
+      </div>
+
+      <p className="mt-3 text-xs leading-5 text-gray-500">
+        Use this tracking number on your courier partner's tracking website
+        to check the shipment status.
+      </p>
+
+    </div>
+  )}
+
 
         </div>
       </div>

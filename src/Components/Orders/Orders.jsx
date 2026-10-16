@@ -1306,6 +1306,34 @@ const Orders = () => {
 
                           </div>
 
+                          
+{/* COURIER + TRACKING ID */}
+
+{(order.shipping?.trackingNumber || order.trackingNumber) &&
+  order.orderStatus !== "Cancelled" && (
+    <>
+      <div className="hidden h-7 w-px bg-gray-200 sm:block" />
+
+      <div className="flex items-center gap-1.5 text-sm text-gray-500">
+        <Truck size={15} className="shrink-0" />
+
+        <div>
+          <p className="font-medium text-gray-800">
+            {order.shipping?.carrier || order.carrier || "Courier"}
+          </p>
+
+          <p className="text-xs text-gray-500">
+            Tracking ID:{" "}
+            <span className="font-medium text-gray-800">
+              {order.shipping?.trackingNumber || order.trackingNumber}
+            </span>
+          </p>
+        </div>
+      </div>
+    </>
+  )}
+
+
                         </div>
 
 
