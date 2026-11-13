@@ -246,7 +246,7 @@ const Contact = () => {
                   </p>
 
                   <p className="mt-1 text-sm text-gray-500">
-                    +91 85904 973558
+                    +91 85904 97358
                   </p>
 
                 </div>
