@@ -27,6 +27,7 @@ import Offers from './Pages/Offers/Offers'
 import Bundles from './Pages/Bundle/Bundle'
 import ShippingPolicy from './Pages/ShippingPolicy/ShippingPolicy'
 import ReturnAndRefund from './Pages/ReturnAndRefund/ReturnAndRefund'
+import Chatbot from './Components/Chatbot/Chatbot'
 
 function App() {
 
@@ -172,6 +173,10 @@ function App() {
       element={<ReturnAndRefund/>}
       />
     </Routes>
+
+    {/* Customer AI shopping assistant: mounted once at app level so it stays
+        available (and keeps its conversation) across all customer routes. */}
+    <Chatbot/>
     </>
   )
 }
