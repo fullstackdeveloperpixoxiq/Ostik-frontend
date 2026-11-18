@@ -65,6 +65,16 @@ const ProductRecommendation = ({ products, onNavigate }) => {
                 </p>
               )}
 
+              {(product.sku || product.modelNumber) && (
+                <p className="truncate text-[10.5px] text-[#999999]" title={[product.sku && `SKU ${product.sku}`, product.modelNumber && `Model ${product.modelNumber}`].filter(Boolean).join(" · ")}>
+                  {product.sku && <span>SKU {product.sku}</span>}
+                  {product.sku && product.modelNumber && product.modelNumber.toUpperCase() !== product.sku.toUpperCase() && " · "}
+                  {product.modelNumber && (!product.sku || product.modelNumber.toUpperCase() !== product.sku.toUpperCase()) && (
+                    <span>Model {product.modelNumber}</span>
+                  )}
+                </p>
+              )}
+
               <div className="mt-auto flex flex-wrap items-baseline gap-x-1.5">
                 {formatINR(product.finalPrice) && (
                   <span className="text-[14px] font-bold text-[#171717]">{formatINR(product.finalPrice)}</span>
