@@ -5,6 +5,7 @@ import {
   Minus,
   Package,
   RefreshCcw,
+  MessageCircleQuestion,
   RotateCcw,
   SendHorizontal,
   ShoppingBag,
@@ -14,10 +15,15 @@ import {
 } from "lucide-react";
 
 import ChatbotMessage from "./ChatbotMessage";
+import ChatUsageIndicator from "./ChatUsageIndicator";
+import { formatResetDate } from "./chatUsageUtils";
 import {
   clearSession,
+  DEFAULT_CONFIG,
+  fetchConfig,
   describeError,
   fetchConversation,
+  fetchUsage,
   getCurrentOwner,
   loadSession,
   saveSession,
@@ -25,7 +31,6 @@ import {
 } from "./chatbotService";
 import "./Chatbot.css";
 
-const MAX_LENGTH = 1000;
 
 // Authentication screens where the floating assistant would get in the way.
 const HIDDEN_ROUTES = [
@@ -37,12 +42,8 @@ const HIDDEN_ROUTES = [
   "/reset-password",
 ];
 
-const SUGGESTIONS = [
-  { label: "Explore products", prompt: "What products do you have?", icon: ShoppingBag },
-  { label: "Find offers", prompt: "Do you have any offers or discounted products right now?", icon: Tag },
-  { label: "Track my order", prompt: "Where is my latest order?", icon: Package },
-  { label: "Return or exchange help", prompt: "How can I return or exchange a product?", icon: RefreshCcw },
-];
+// Icons cycle through the admin-configured suggested questions.
+const SUGGESTION_ICONS = [ShoppingBag, Tag, Package, RefreshCcw, MessageCircleQuestion, Sparkles];
 
 let localId = 0;
 const nextId = () => `local-${Date.now()}-${(localId += 1)}`;
@@ -59,6 +60,9 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const [config, setConfig] = useState(DEFAULT_CONFIG); // Admin -> Chatbot Settings
+  const [usage, setUsage] = useState(null); // monthly AI chat usage (logged-in customers)
+  const [usageStatus, setUsageStatus] = useState("idle"); // idle | loading | error
 
   const sessionRef = useRef(null); // { conversationId, guestToken }
   const ownerRef = useRef(getCurrentOwner());
@@ -69,13 +73,53 @@ const Chatbot = () => {
   const inputRef = useRef(null);
   const visibleRef = useRef(false);
   const restoreAbortRef = useRef(null);
+  const usageAbortRef = useRef(null);
 
-  const isHidden = HIDDEN_ROUTES.includes(location.pathname.toLowerCase());
+  const isHidden = HIDDEN_ROUTES.includes(location.pathname.toLowerCase()) || !config.enabled;
+  const MAX_LENGTH = config.maxMessageLength || DEFAULT_CONFIG.maxMessageLength;
+  const assistantName = config.assistantName || DEFAULT_CONFIG.assistantName;
+
+  // Load the admin-configured name, welcome text and suggestions (defaults on failure).
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchConfig({ signal: controller.signal })
+      .then(setConfig)
+      .catch(() => {}); // keep defaults
+    return () => controller.abort();
+  }, []);
   const isVisible = isOpen && !isMinimized;
 
   useEffect(() => {
     visibleRef.current = isVisible;
   }, [isVisible]);
+
+  // ---------------------------------------------------------------------
+  // Monthly usage (only for logged-in customers)
+  // ---------------------------------------------------------------------
+  const loadUsage = useCallback(() => {
+    usageAbortRef.current?.abort();
+
+    if (!localStorage.getItem("token")) {
+      setUsage(null);
+      setUsageStatus("idle");
+      return;
+    }
+
+    const controller = new AbortController();
+    usageAbortRef.current = controller;
+    setUsageStatus("loading");
+
+    fetchUsage({ signal: controller.signal })
+      .then((data) => {
+        if (controller.signal.aborted) return;
+        setUsage(data);
+        setUsageStatus(data ? "idle" : "error");
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setUsageStatus("error"); // keep the last known usage, if any
+      });
+  }, []);
 
   // ---------------------------------------------------------------------
   // Reset the chat when the customer logs in / out (conversations belong
@@ -105,6 +149,9 @@ const Chatbot = () => {
       setMessages([]);
       setLoading(false);
       setRestoring(false);
+      usageAbortRef.current?.abort();
+      setUsage(null);
+      setUsageStatus("idle");
     }
   }, [location.pathname]);
 
@@ -147,6 +194,7 @@ const Chatbot = () => {
     () => () => {
       abortRef.current?.abort();
       restoreAbortRef.current?.abort();
+      usageAbortRef.current?.abort();
     },
     []
   );
@@ -230,10 +278,28 @@ const Chatbot = () => {
             },
           ]);
 
+          if (data.usage) setUsage(data.usage);
+          else if (localStorage.getItem("token")) loadUsage();
+
           if (!visibleRef.current) setHasUnread(true);
         } catch (error) {
           const info = describeError(error);
           if (!info) return; // request was cancelled
+
+          // Monthly allowance exhausted: show the limit banner instead of an error bubble,
+          // and give the unsent question back to the input box.
+          if (info.code === "USAGE_LIMIT_REACHED") {
+            if (info.usage) setUsage(info.usage);
+            else loadUsage();
+            if (!isRetry) {
+              setMessages((current) => {
+                const last = current[current.length - 1];
+                return last?.role === "user" && last.content === text ? current.slice(0, -1) : current;
+              });
+            }
+            setInput((current) => current || text);
+            return;
+          }
 
           // Stale / foreign conversation: start a fresh one and resend once.
           if (info.code === "CONVERSATION_NOT_FOUND" && allowReset) {
@@ -272,7 +338,7 @@ const Chatbot = () => {
       sendingRef.current = false;
       setLoading(false);
     },
-    []
+    [loadUsage, MAX_LENGTH]
   );
 
   const handleSubmit = (e) => {
@@ -289,6 +355,7 @@ const Chatbot = () => {
 
   const openChat = () => {
     restoreConversation();
+    loadUsage();
     setIsOpen(true);
     setIsMinimized(false);
     setHasUnread(false);
@@ -301,6 +368,9 @@ const Chatbot = () => {
 
   if (isHidden) return null;
 
+  const limitReached = !!usage?.isLimitReached;
+  const resetDate = formatResetDate(usage?.periodEnd);
+
   const lastError = messages.length && messages[messages.length - 1].role === "error" ? messages[messages.length - 1] : null;
 
   return (
@@ -310,11 +380,11 @@ const Chatbot = () => {
         <button
           type="button"
           onClick={openChat}
-          aria-label="Open Ostik AI Assistant"
+          aria-label={`Open ${assistantName}`}
           className="ostik-chat-launcher fixed bottom-[68px] right-4 z-[90] flex h-14 items-center gap-2 rounded-full bg-black pl-4 pr-4 text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-transform hover:scale-[1.03] sm:bottom-[84px] sm:right-6 sm:pr-5"
         >
-          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[#00ff03] text-black">
-            <Sparkles size={17} />
+          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white text-black">
+            <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />
             {hasUnread && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-black bg-[#ff3b30]" />}
           </span>
           <span className="hidden text-[14px] font-semibold sm:inline">Ask Ostik AI</span>
@@ -326,14 +396,14 @@ const Chatbot = () => {
         <button
           type="button"
           onClick={openChat}
-          aria-label="Expand Ostik AI Assistant"
+          aria-label={`Expand ${assistantName}`}
           className="fixed bottom-[68px] right-4 z-[90] flex items-center gap-2.5 rounded-full bg-black py-2 pl-2 pr-4 text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)] sm:bottom-[84px] sm:right-6"
         >
-          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[#00ff03] text-black">
-            <Sparkles size={16} />
+          <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white text-black">
+            <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />
             {hasUnread && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-black bg-[#ff3b30]" />}
           </span>
-          <span className="text-[13px] font-semibold">{loading ? "Assistant is typing…" : "Ostik AI Assistant"}</span>
+          <span className="text-[13px] font-semibold">{loading ? "Assistant is typing…" : assistantName}</span>
           <ChevronUp size={16} />
         </button>
       )}
@@ -342,22 +412,26 @@ const Chatbot = () => {
       {isVisible && (
         <section
           role="dialog"
-          aria-label="Ostik AI Assistant"
+          aria-label={assistantName}
           className="ostik-chat-window fixed inset-0 z-[400] flex flex-col overflow-hidden bg-white sm:inset-auto sm:bottom-[84px] sm:right-6 sm:z-[150] sm:h-[min(640px,calc(100dvh-108px))] sm:w-[390px] sm:rounded-3xl sm:border sm:border-[#e8ede3] sm:shadow-[0_24px_60px_rgba(0,0,0,0.18)]"
         >
           {/* Header */}
           <header className="flex items-center gap-3 bg-black px-4 py-3 text-white">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00ff03] text-black">
-              <Sparkles size={19} />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black">
+              <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />
             </span>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-semibold leading-tight">Ostik AI Assistant</p>
+              <p className="truncate text-[15px] font-semibold leading-tight">{assistantName}</p>
               <p className="flex items-center gap-1.5 text-[12px] text-white/70">
                 <span className="ostik-chat-online h-2 w-2 rounded-full bg-[#00ff03]" />
                 Online · Shopping help
               </p>
             </div>
+
+            {(usage || usageStatus !== "idle") && (
+              <ChatUsageIndicator usage={usage} status={usageStatus} onRetry={loadUsage} />
+            )}
 
             <button
               type="button"
@@ -397,33 +471,39 @@ const Chatbot = () => {
           >
             {/* Welcome */}
             <div className="ostik-chat-message flex items-start gap-2">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-[#00ff03]">
-                <Sparkles size={14} />
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-[#e8ede3]">
+                <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />
               </span>
               <div className="max-w-[88%] space-y-2 rounded-2xl rounded-tl-md bg-[#F8F9F6] px-3.5 py-2.5 text-[14px] leading-relaxed text-[#333333]">
-                <p className="font-semibold text-[#171717]">Hi! Welcome to Ostik.</p>
-                <p>
-                  I&apos;m your personal shopping assistant. I can help you discover products, find great deals,
-                  track your orders and answer questions about shopping with Ostik.
-                </p>
-                <p>How can I help you today?</p>
+                {(config.welcomeMessage || DEFAULT_CONFIG.welcomeMessage)
+                  .split(/\n\s*\n/)
+                  .map((para) => para.trim())
+                  .filter(Boolean)
+                  .map((para, i) => (
+                    <p key={i} className={i === 0 ? "whitespace-pre-line font-semibold text-[#171717]" : "whitespace-pre-line"}>
+                      {para}
+                    </p>
+                  ))}
               </div>
             </div>
 
             {!messages.length && !restoring && (
               <div className="flex flex-wrap gap-2 pl-9">
-                {SUGGESTIONS.map(({ label, prompt, icon: Icon }) => (
+                {(config.suggestedQuestions || []).map((label, i) => {
+                  const Icon = SUGGESTION_ICONS[i % SUGGESTION_ICONS.length];
+                  return (
                   <button
                     key={label}
                     type="button"
-                    onClick={() => send(prompt)}
-                    disabled={loading}
+                    onClick={() => send(label)}
+                    disabled={loading || limitReached}
                     className="flex items-center gap-1.5 rounded-full border border-[#d9e8c8] bg-[#f7fbf3] px-3 py-1.5 text-[13px] font-medium text-[#171717] transition-colors hover:border-[#00e603] hover:bg-[#f0f8e7] disabled:opacity-50"
                   >
                     <Icon size={14} className="text-[#2f9e00]" />
                     {label}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -435,7 +515,7 @@ const Chatbot = () => {
               <ChatbotMessage key={message.id} message={message} onNavigate={handleNavigate} />
             ))}
 
-            {lastError?.retryText && !loading && (
+            {lastError?.retryText && !loading && !limitReached && (
               <div className="pl-9">
                 <button
                   type="button"
@@ -449,8 +529,8 @@ const Chatbot = () => {
 
             {loading && (
               <div className="ostik-chat-message flex items-center gap-2" aria-label="Assistant is typing">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-[#00ff03]">
-                  <Sparkles size={14} />
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-[#e8ede3]">
+                  <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />
                 </span>
                 <div className="flex items-center gap-1 rounded-2xl rounded-tl-md bg-[#F8F9F6] px-4 py-3">
                   <span className="ostik-chat-dot" />
@@ -463,6 +543,14 @@ const Chatbot = () => {
 
           {/* Footer */}
           <form onSubmit={handleSubmit} className="border-t border-[#eeeeee] bg-white px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+            {limitReached && (
+              <div role="status" className="mb-2.5 rounded-2xl border border-[#f7c6c2] bg-[#fdecea] px-3.5 py-2.5 text-[13px] leading-snug text-[#8a1c14]">
+                <p className="font-semibold">You've used all your AI chat messages for this month.</p>
+                <p className="mt-0.5 text-[12px] text-[#a8362d]">
+                  Your allowance resets on {resetDate}. You can still browse products, view orders and read this conversation.
+                </p>
+              </div>
+            )}
             <div className="flex items-end gap-2 rounded-3xl border border-[#e3e3e3] bg-white py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-black">
               <textarea
                 ref={inputRef}
@@ -471,13 +559,14 @@ const Chatbot = () => {
                 maxLength={MAX_LENGTH}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about products, offers or orders…"
+                disabled={limitReached}
+                placeholder={limitReached ? `Messages available again on ${resetDate}` : "Ask about products, offers or orders…"}
                 aria-label="Type your message"
-                className="max-h-[120px] min-h-[24px] flex-1 resize-none bg-transparent py-1.5 text-[14px] text-[#171717] outline-none placeholder:text-[#999999]"
+                className="max-h-[120px] min-h-[24px] flex-1 resize-none bg-transparent py-1.5 text-[14px] text-[#171717] outline-none placeholder:text-[#999999] disabled:cursor-not-allowed"
               />
               <button
                 type="submit"
-                disabled={loading || !input.trim()}
+                disabled={loading || limitReached || !input.trim()}
                 aria-label="Send message"
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00ff03] text-black transition-colors hover:bg-[#00e603] disabled:bg-[#e9ecef] disabled:text-[#999999]"
               >

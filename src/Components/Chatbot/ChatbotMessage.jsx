@@ -131,11 +131,11 @@ const ChatbotMessage = ({ message, onNavigate }) => {
     <div className="ostik-chat-message flex items-start gap-2">
       <span
         className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-          isError ? "bg-[#fdecea] text-[#d93025]" : "bg-black text-[#00ff03]"
+          isError ? "bg-[#fdecea] text-[#d93025]" : "bg-white border border-[#e8ede3]"
         }`}
         aria-hidden="true"
       >
-        <Sparkles size={14} />
+        {isError ? <Sparkles size={14} /> : <img src="/ostikFavicon.png" alt="Ostik" className="h-[70%] w-[70%] object-contain" />}
       </span>
 
       <div className="min-w-0 max-w-[88%] flex-1">

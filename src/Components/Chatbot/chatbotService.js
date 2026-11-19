@@ -85,6 +85,37 @@ export const fetchConversation = async ({ conversationId, guestToken, signal }) 
   return response.data;
 };
 
+// Public assistant settings managed in Admin -> Chatbot Settings.
+export const DEFAULT_CONFIG = Object.freeze({
+  enabled: true,
+  assistantName: "Ostik AI Assistant",
+  welcomeMessage:
+    "Hi! Welcome to Ostik.\n\nI'm your personal shopping assistant. I can help you discover products, find great deals, track your orders and answer questions about shopping with Ostik.\n\nHow can I help you today?",
+  suggestedQuestions: [
+    "What products do you have?",
+    "Any offers right now?",
+    "Where is my latest order?",
+    "How do I return or exchange?",
+  ],
+  maxMessageLength: 1000,
+});
+
+export const fetchConfig = async ({ signal } = {}) => {
+  const response = await axios.get(`${API_URL}/config`, { timeout: 15000, signal });
+  return { ...DEFAULT_CONFIG, ...(response.data?.config || {}) };
+};
+
+// Monthly AI chat usage for the logged-in customer (server is the source of truth).
+export const fetchUsage = async ({ signal } = {}) => {
+  const response = await axios.get(`${API_URL}/usage`, {
+    headers: authHeaders(),
+    timeout: 15000,
+    signal,
+  });
+
+  return response.data?.usage || null;
+};
+
 // Map API / network errors to a short customer-friendly message.
 export const describeError = (error) => {
   if (axios.isCancel?.(error) || error?.code === "ERR_CANCELED") return null;
@@ -102,5 +133,6 @@ export const describeError = (error) => {
   return {
     code: data?.code || `HTTP_${error.response.status}`,
     message: data?.message || "Something went wrong. Please try again.",
+    usage: data?.usage || null,
   };
 };
