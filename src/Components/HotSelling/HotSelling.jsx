@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { Heart, ArrowRight, Star } from "lucide-react";
 import axios from "axios";
+import useCachedGet from "../../utils/useCachedGet";
+import { fetchWishlistIds } from "../../utils/apiCache";
+import SmartImage from "../Common/SmartImage";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const HotSelling = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Prices and stock are always re-fetched; a previous response (if any)
+  // is shown meanwhile so returning to the page is instant.
+  const { data, loading } = useCachedGet("/api/product/hot-selling");
+  const products = data?.products || [];
 
   // =========================================================
   // WISHLIST STATES
@@ -18,92 +23,32 @@ const HotSelling = () => {
   const navigate = useNavigate();
 
   // =========================================================
-  // FETCH HOT SELLING PRODUCTS
-  // =========================================================
-
-  useEffect(() => {
-    const fetchHotSelling = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product/hot-selling`
-        );
-
-        setProducts(response.data.products || []);
-      } catch (error) {
-        console.log(
-          "Error fetching hot selling products:",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotSelling();
-  }, []);
-
-  // =========================================================
   // FETCH WISHLIST
   // =========================================================
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
+    let active = true;
 
-      // Login cheythittillenkil wishlist fetch venda
-      if (!token) {
-        setWishlistProducts([]);
-        return;
-      }
+    // One shared request for every section on the page.
+    fetchWishlistIds()
+      .then((ids) => {
+        if (active) setWishlistProducts(ids);
+      })
+      .catch((error) => {
+        console.error("WISHLIST FETCH ERROR:", error);
 
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const products =
-          response.data.wishlist?.products || [];
-
-        /*
-          Backend populated products aanenkil:
-          { _id: "...", name: "...", ... }
-
-          Populate cheyyathath aanenkil:
-          "...productId..."
-
-          Randum handle cheyyunnu.
-        */
-
-        setWishlistProducts(
-          products
-            .map((product) =>
-              typeof product === "string"
-                ? product
-                : product?._id
-            )
-            .filter(Boolean)
-        );
-      } catch (error) {
-        console.error(
-          "WISHLIST FETCH ERROR:",
-          error
-        );
-
+        // Token expired
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
 
-          setWishlistProducts([]);
+          if (active) setWishlistProducts([]);
         }
-      }
-    };
+      });
 
-    fetchWishlist();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // =========================================================
@@ -388,8 +333,10 @@ const HotSelling = () => {
                 <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[4/3]">
 
                   {image && (
-                    <img
+                    <SmartImage
                       src={image}
+                      maxWidth={640}
+                      sizes="(min-width: 1024px) 640px, 100vw"
                       alt={product.name}
                       className="h-full w-full cursor-pointer transition-transform duration-500 group-hover:scale-105"
                       onClick={() =>
@@ -559,8 +506,10 @@ const HotSelling = () => {
                 <div className="relative w-2/5 overflow-hidden">
 
                   {image && (
-                    <img
+                    <SmartImage
                       src={image}
+                      maxWidth={260}
+                      sizes="(min-width: 1024px) 260px, 40vw"
                       alt={product.name}
                       className="h-full w-full cursor-pointer transition-transform duration-500 group-hover:scale-105"
                       onClick={() =>

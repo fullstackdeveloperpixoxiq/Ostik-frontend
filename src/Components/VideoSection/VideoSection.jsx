@@ -1,30 +1,12 @@
-import { useEffect, useState } from "react";
 import { ArrowUpRight, Play } from "lucide-react";
-import axios from "axios";
+import useCachedGet from "../../utils/useCachedGet";
+import { STATIC_TTL } from "../../utils/apiCache";
 
 const VideoSection = () => {
-  const [videoSection, setVideoSection] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchVideoSection = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/video-section`
-        );
-
-        if (response.data.success) {
-          setVideoSection(response.data.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch video section:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVideoSection();
-  }, []);
+  const { data, loading } = useCachedGet("/api/video-section", {
+    ttl: STATIC_TTL,
+  });
+  const videoSection = data?.success ? data.data : null;
 
   // Don't render anything while loading
   if (loading) {
@@ -90,6 +72,7 @@ const VideoSection = () => {
                   src={getYouTubeEmbedUrl(videoUrl)}
                   title={title}
                   className="h-full w-full"
+                  loading="lazy"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />

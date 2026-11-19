@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Wishlist = () => {
   const navigate = useNavigate();
 
@@ -430,7 +431,8 @@ const Wishlist = () => {
                     <div className="relative aspect-square overflow-hidden bg-gray-100">
 
                       {image && (
-                        <img
+                        <SmartImage
+                          maxWidth={320}
                           src={image}
                           alt={product.name}
                           className="h-full w-full cursor-pointer object-contain transition-transform duration-500 group-hover:scale-105"

@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Exchanges = () => {
   const navigate = useNavigate();
 
@@ -439,7 +440,8 @@ const Exchanges = () => {
                         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
 
                           {exchange.item?.image ? (
-                            <img
+                            <SmartImage
+                              maxWidth={160}
                               src={
                                 exchange.item
                                   .image
@@ -512,7 +514,8 @@ const Exchanges = () => {
 
                           {exchange.exchangeItem
                             ?.image ? (
-                            <img
+                            <SmartImage
+                              maxWidth={160}
                               src={
                                 exchange
                                   .exchangeItem

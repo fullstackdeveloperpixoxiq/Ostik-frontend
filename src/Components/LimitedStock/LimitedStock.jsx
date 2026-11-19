@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Heart, ShoppingBag } from "lucide-react";
 import axios from "axios";
+import useCachedGet from "../../utils/useCachedGet";
+import { fetchWishlistIds } from "../../utils/apiCache";
+import SmartImage from "../Common/SmartImage";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const LimitedStock = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Prices and stock are always re-fetched; a previous response (if any)
+  // is shown meanwhile so returning to the page is instant.
+  const { data, loading } = useCachedGet("/api/product/limited-stock");
+  const products = data?.products || [];
 
   // =====================================
   // WISHLIST STATE
@@ -17,67 +22,31 @@ const LimitedStock = () => {
   const navigate = useNavigate();
 
   // =====================================
-  // FETCH LIMITED STOCK PRODUCTS
-  // =====================================
-  useEffect(() => {
-    const fetchLimitedStock = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product/limited-stock`
-        );
-
-        setProducts(response.data.products || []);
-      } catch (error) {
-        console.log(
-          "Error fetching limited stock products:",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLimitedStock();
-  }, []);
-
-  // =====================================
   // FETCH USER WISHLIST
   // =====================================
   useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
+    let active = true;
 
-      if (!token) {
-        return;
-      }
+    // One shared request for every section on the page.
+    fetchWishlistIds()
+      .then((ids) => {
+        if (active) setWishlistProducts(ids);
+      })
+      .catch((error) => {
+        console.error("WISHLIST FETCH ERROR:", error);
 
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        // Token expired
+        if (error.response?.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
 
-        const products = response.data.wishlist?.products || [];
+          if (active) setWishlistProducts([]);
+        }
+      });
 
-        setWishlistProducts(
-          products
-            .map((product) =>
-              typeof product === "string"
-                ? product
-                : product?._id
-            )
-            .filter(Boolean)
-        );
-      } catch (error) {
-        console.log("Error fetching wishlist:", error);
-      }
+    return () => {
+      active = false;
     };
-
-    fetchWishlist();
   }, []);
 
   // =====================================
@@ -311,8 +280,10 @@ const LimitedStock = () => {
               <div className="relative aspect-square overflow-hidden bg-gray-50">
 
                 {image && (
-                  <img
+                  <SmartImage
                     src={image}
+                    maxWidth={300}
+                    sizes="(min-width: 1024px) 300px, 50vw"
                     alt={product.name}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

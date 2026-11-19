@@ -105,7 +105,7 @@ const Register = () => {
           to="/"
           className="mb-10 flex justify-center items-center text-[30px] font-black tracking-[-1.5px] text-[#171717]"
         >
-          <img src="\OstikLogo\OSTIK_PNG.png" alt="OSTIK" 
+          <img src="\OstikLogo\OSTIK_PNG.png" width={600} height={424} alt="OSTIK" 
           className="w-[150px] h-auto object-contain"/>
         </Link>
 

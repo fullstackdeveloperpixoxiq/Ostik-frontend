@@ -20,6 +20,11 @@ import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
 import axios from "axios";
+import { fetchWishlistIds, findCachedProduct } from "../../utils/apiCache";
+import { preloadImage } from "../../utils/image";
+import SmartImage from "../../Components/Common/SmartImage";
+
+const GALLERY_MAX_WIDTH = 640;
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -52,44 +57,92 @@ const ProductDetail = () => {
   const [selectedReviewImage, setSelectedReviewImage]= useState(0);
 
   // =========================================================
+  // INSTANT PAINT ON NAVIGATION
+  // If this product was just shown in a list (home / listing), show it
+  // immediately from that data; fresh details, prices and stock are always
+  // fetched below and replace it. Done during render when the id changes
+  // (React's recommended alternative to setState inside an effect).
+  // =========================================================
+
+  const [shownId, setShownId] = useState(null);
+
+  if (shownId !== id) {
+    setShownId(id);
+    setError("");
+
+    const seed = findCachedProduct(id);
+
+    if (seed) {
+      const { variants: seedVariants = [], ...seedProduct } = seed;
+      setProduct(seedProduct);
+      setVariants(seedVariants);
+      setSelectedVariant(seedVariants[0] || null);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+  }
+
+  // =========================================================
   // FETCH PRODUCT
   // =========================================================
 
   useEffect(() => {
+    let active = true;
+
+    // Whether list data is already on screen for this product.
+    const seed = findCachedProduct(id);
+
     const fetchProduct = async () => {
       try {
-        setLoading(true);
-        setError("");
-
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product/${id}`
+          `${import.meta.env.VITE_API_URL}/api/product/${id}`,
+          { timeout: 20000 }
         );
+
+        if (!active) return;
 
         const data = response.data;
+        const freshVariants = data.variants || [];
 
         setProduct(data.product);
-        setVariants(data.variants || []);
+        setVariants(freshVariants);
 
-        // Select first active variant
-        if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0]);
-        }
+        // Keep the variant the user already picked (with fresh price /
+        // stock); otherwise select the first active variant.
+        setSelectedVariant((previous) =>
+          freshVariants.find(
+            (variant) => variant._id === previous?._id
+          ) ||
+          freshVariants[0] ||
+          null
+        );
       } catch (err) {
+        if (!active) return;
+
         console.error("Product fetch error:", err);
 
-        setError(
-          err.response?.data?.message ||
-            err.message ||
-            "Unable to load product"
-        );
+        // With seeded data on screen, only a definite "not found" replaces
+        // the page; transient failures keep the content visible.
+        if (!seed || err.response?.status === 404) {
+          setError(
+            err.response?.data?.message ||
+              err.message ||
+              "Unable to load product"
+          );
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     if (id) {
       fetchProduct();
     }
+
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   // =========================================================
@@ -137,24 +190,12 @@ const ProductDetail = () => {
       }
 
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const wishlistIds = await fetchWishlistIds();
+
+        const exists = wishlistIds.some(
+          (wishlistProductId) =>
+            wishlistProductId?.toString() === id.toString()
         );
-
-        const wishlistProducts =
-          response.data?.wishlist?.products || [];
-
-        const exists = wishlistProducts.some((wishlistProduct) => {
-          const wishlistProductId =
-            wishlistProduct?._id || wishlistProduct;
-
-          return wishlistProductId?.toString() === id.toString();
-        });
 
         setIsWishlisted(exists);
       } catch (error) {
@@ -196,12 +237,35 @@ const ProductDetail = () => {
 }, [product, selectedVariant]);
 
   // =========================================================
-  // RESET IMAGE WHEN VARIANT CHANGES
+  // PRELOAD NEIGHBOURING GALLERY IMAGES
+  // (next / previous appear instantly instead of loading on click)
   // =========================================================
 
   useEffect(() => {
+    if (currentImages.length < 2) return;
+
+    const sizes = "(min-width: 1024px) 640px, 100vw";
+    const next = (selectedImage + 1) % currentImages.length;
+    const previous =
+      (selectedImage - 1 + currentImages.length) % currentImages.length;
+
+    preloadImage(currentImages[next], GALLERY_MAX_WIDTH, sizes);
+    preloadImage(currentImages[previous], GALLERY_MAX_WIDTH, sizes);
+  }, [currentImages, selectedImage]);
+
+  // =========================================================
+  // RESET IMAGE WHEN VARIANT CHANGES
+  // =========================================================
+
+  // Keyed on the variant id so a background refresh of the same variant
+  // (fresh price / stock) doesn't jump the gallery back to the first image.
+  const selectedVariantId = selectedVariant?._id;
+  const [galleryVariantId, setGalleryVariantId] = useState(selectedVariantId);
+
+  if (galleryVariantId !== selectedVariantId) {
+    setGalleryVariantId(selectedVariantId);
     setSelectedImage(0);
-  }, [selectedVariant]);
+  }
 
   // =========================================================
   // PRICE CALCULATION
@@ -602,6 +666,8 @@ const previousReviewImage = () => {
 
   if (loading) {
     return (
+      <>
+      <Navbar />
       <div className="min-h-screen bg-[#F8F9F6] px-4 py-10 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl animate-pulse">
 
@@ -632,6 +698,7 @@ const previousReviewImage = () => {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -641,6 +708,8 @@ const previousReviewImage = () => {
 
   if (error || !product) {
     return (
+      <>
+      <Navbar />
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="text-center">
 
@@ -666,6 +735,7 @@ const previousReviewImage = () => {
 
         </div>
       </div>
+      </>
     );
   }
 
@@ -738,8 +808,11 @@ const previousReviewImage = () => {
 
                 {currentImages.length > 0 ? (
                   <>
-                    <img
+                    <SmartImage
                       src={currentImages[selectedImage]}
+                      maxWidth={GALLERY_MAX_WIDTH}
+                      sizes="(min-width: 1024px) 640px, 100vw"
+                      priority
                       alt={product.name}
                       className="h-[320px] w-full object-contain p-5 sm:h-[500px] sm:p-12"
                     />
@@ -797,8 +870,9 @@ const previousReviewImage = () => {
                           : "border-gray-200 hover:border-gray-400"
                       }`}
                     >
-                      <img
+                      <SmartImage
                         src={image}
+                        maxWidth={80}
                         alt={`${product.name} ${index + 1}`}
                         className="h-full w-full object-contain p-2"
                       />
@@ -1393,7 +1467,8 @@ const previousReviewImage = () => {
                             onClick={()=> openReviewImage(review.images,index)}
                             className="group relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 sm:h-24 sm:w-24"
                             >
-                              <img src={image} 
+                              <SmartImage src={image}
+                              maxWidth={96}
                               alt={`customer review ${index +1}`}
                               className="h-full w-full object-cover transition duration-200 group-hover:scale-105" />
 
@@ -1481,8 +1556,11 @@ const previousReviewImage = () => {
               className="relative flex max-h-[90vh] max-w-[90vw] items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <SmartImage
                 src={selectedReviewImages[selectedReviewImage]}
+                maxWidth={1280}
+                sizes="85vw"
+                priority
                 alt="Customer review"
                 className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
               />

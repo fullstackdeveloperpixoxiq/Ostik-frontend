@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Returns = () => {
   const navigate = useNavigate();
 
@@ -317,7 +318,8 @@ const Returns = () => {
                           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
 
                             {item?.image ? (
-                              <img
+                              <SmartImage
+                                maxWidth={160}
                                 src={item.image}
                                 alt={item.name}
                                 className="h-full w-full object-contain p-2"

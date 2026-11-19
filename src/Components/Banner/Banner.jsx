@@ -1,32 +1,30 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import useCachedGet from "../../utils/useCachedGet";
+import { STATIC_TTL } from "../../utils/apiCache";
+import { preloadImage } from "../../utils/image";
+import SmartImage from "../Common/SmartImage";
+
+const BANNER_MAX_WIDTH = 1920;
+const BANNER_RATIO_WIDTH = 1920;
+const BANNER_RATIO_HEIGHT = 640;
 
 const SuperBanner = () => {
-  const [banners, setBanners] = useState([]);
+  // Banners rarely change: cached for a few minutes and shared, so going
+  // back to the homepage shows them instantly.
+  const { data, loading } = useCachedGet("/api/banner", { ttl: STATIC_TTL });
+  const banners = useMemo(() => data?.banners || [], [data]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
+  // Warm the next slide so the switch doesn't show a blank frame.
   useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/banner`
-        );
-
-        setBanners(response.data.banners || []);
-      } catch (error) {
-        console.error("Failed to fetch banners:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBanners();
-  }, []);
+    if (banners.length <= 1) return;
+    const next = banners[(currentIndex + 1) % banners.length];
+    preloadImage(next?.image, BANNER_MAX_WIDTH, "100vw");
+  }, [banners, currentIndex]);
 
   // Auto slide
   useEffect(() => {
@@ -55,7 +53,12 @@ const SuperBanner = () => {
 
   if (loading) {
     return (
-      <div className="h-[360px] w-full animate-pulse bg-gray-100 sm:h-[450px]" />
+      // Same footprint as the loaded banner (280px on mobile, 3:1 on larger
+      // screens, plus the slide indicators) so nothing jumps when it arrives.
+      <div aria-hidden="true">
+        <div className="h-[280px] w-full animate-pulse bg-gray-100 sm:aspect-[3/1] sm:h-auto" />
+        <div className="h-[30px] sm:h-[38px]" />
+      </div>
     );
   }
 
@@ -63,7 +66,7 @@ const SuperBanner = () => {
     return null;
   }
 
-  const banner = banners[currentIndex];
+  const banner = banners[currentIndex] || banners[0];
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -72,8 +75,18 @@ const SuperBanner = () => {
       <div className="relative h-[280px] w-full bg-black sm:h-auto">
 
         {/* Image */}
-        <img
+        {/* Above the fold (LCP): loaded eagerly with high priority,
+            in a size and format suited to the screen. */}
+        <SmartImage
           src={banner.image}
+          maxWidth={BANNER_MAX_WIDTH}
+          sizes="100vw"
+          priority
+          // Space-reservation hint only (banners are 3:1). Once the image
+          // loads its real proportions are used, so other shapes still
+          // display exactly as uploaded.
+          width={BANNER_RATIO_WIDTH}
+          height={BANNER_RATIO_HEIGHT}
           alt={banner.title}
           className="absolute inset-0 h-full w-full sm:static sm:h-auto sm:w-full"
         />

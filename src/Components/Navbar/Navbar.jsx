@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { cachedGet, peekCached, STATIC_TTL } from "../../utils/apiCache";
+import SmartImage from "../Common/SmartImage";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -36,7 +38,9 @@ const Navbar = () => {
   const [expandedCategory, setExpandedCategory] = useState(null);
 
   // Categories from backend
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(
+    () => peekCached("/api/category")?.data?.categories || []
+  );
 
   // =========================================================
   // SEARCH STATES
@@ -85,20 +89,22 @@ const Navbar = () => {
   // FETCH CATEGORIES
   // =========================================================
 
+  // Shared, briefly cached request: the navbar is mounted on every page, so
+  // categories were previously re-downloaded on each navigation.
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/category`
-        );
+    let active = true;
 
-        setCategories(response.data.categories || []);
-      } catch (error) {
+    cachedGet("/api/category", { ttl: STATIC_TTL })
+      .then((response) => {
+        if (active) setCategories(response.data.categories || []);
+      })
+      .catch((error) => {
         console.log("Error fetching categories:", error);
-      }
-    };
+      });
 
-    fetchCategories();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // =========================================================
@@ -132,37 +138,65 @@ const Navbar = () => {
   // SEARCH
   // =========================================================
 
-  const handleSearchChange = async (value) => {
+  // Debounced: one request after the user pauses typing instead of one per
+  // keystroke, and any older in-flight search is cancelled so a slow
+  // response can never overwrite newer results.
+  const searchTimerRef = useRef(null);
+  const searchAbortRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(searchTimerRef.current);
+      searchAbortRef.current?.abort();
+    };
+  }, []);
+
+  const handleSearchChange = (value) => {
     setSearchQuery(value);
 
     const trimmedValue = value.trim();
 
+    clearTimeout(searchTimerRef.current);
+    searchAbortRef.current?.abort();
+
     if (!trimmedValue) {
       setSearchResults([]);
       setSearchOpen(false);
+      setSearchLoading(false);
       return;
     }
 
-    try {
-      setSearchLoading(true);
-      setSearchOpen(true);
+    setSearchLoading(true);
+    setSearchOpen(true);
 
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/product`,
-        {
-          params: {
-            search: trimmedValue,
-          },
-        }
-      );
+    searchTimerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
 
-      setSearchResults(response.data.products || []);
-    } catch (error) {
-      console.log("Search error:", error);
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/product`,
+          {
+            params: {
+              search: trimmedValue,
+              // the dropdown shows at most 6 suggestions
+              limit: 6,
+            },
+            signal: controller.signal,
+            timeout: 15000,
+          }
+        );
+
+        setSearchResults(response.data.products || []);
+        setSearchLoading(false);
+      } catch (error) {
+        if (axios.isCancel(error)) return;
+
+        console.log("Search error:", error);
+        setSearchResults([]);
+        setSearchLoading(false);
+      }
+    }, 250);
   };
 
   // =========================================================
@@ -683,8 +717,9 @@ useEffect(() => {
                           "
                         >
 
-                          <img
+                          <SmartImage
                             src={product.images?.[0]}
+                            maxWidth={52}
                             alt={product.name}
                             className="
                               w-[52px]
@@ -781,7 +816,7 @@ useEffect(() => {
           >
 
             <img
-              src="/OstikLogo/OSTIK_PNG.png"
+              src="/OstikLogo/OSTIK_PNG.png" width={600} height={424}
               alt="OSTIK"
               className="
                 w-[130px]
@@ -1404,7 +1439,7 @@ useEffect(() => {
           >
 
             <img
-              src="/OstikLogo/OSTIK_PNG.png"
+              src="/OstikLogo/OSTIK_PNG.png" width={600} height={424}
               alt="OSTIK"
               className="
                 w-[110px]
@@ -1633,8 +1668,9 @@ useEffect(() => {
                         "
                       >
 
-                        <img
+                        <SmartImage
                           src={product.images?.[0]}
+                          maxWidth={52}
                           alt={product.name}
                           className="
                             w-[52px]

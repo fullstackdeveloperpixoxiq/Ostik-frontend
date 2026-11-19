@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 
+import SmartImage from "../Common/SmartImage";
 const formatINR = (value) =>
   typeof value === "number" && Number.isFinite(value) ? `₹${value.toLocaleString("en-IN")}` : null;
 
@@ -34,7 +35,8 @@ const ProductRecommendation = ({ products, onNavigate }) => {
               aria-label={`View ${product.name}`}
             >
               {product.image ? (
-                <img
+                <SmartImage
+                  maxWidth={160}
                   src={product.image}
                   alt={product.name}
                   loading="lazy"

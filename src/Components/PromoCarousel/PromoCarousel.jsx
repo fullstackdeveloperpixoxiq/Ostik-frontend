@@ -1,70 +1,32 @@
-
-import { useEffect, useState } from "react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import useCachedGet from "../../utils/useCachedGet";
+import { STATIC_TTL } from "../../utils/apiCache";
 
 function PromoCarousel() {
-  const [carousel, setCarousel] = useState(null);
-  const [shippingSettings, setShippingSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Both settings rarely change: fetched in parallel, cached briefly and
+  // shared across pages.
+  const carouselRequest = useCachedGet("/api/settings/promo-carousel", {
+    ttl: STATIC_TTL,
+  });
+  const shippingRequest = useCachedGet("/api/settings/shipping", {
+    ttl: STATIC_TTL,
+  });
 
-  useEffect(() => {
-    let isMounted = true;
+  const loading = carouselRequest.loading || shippingRequest.loading;
+  const carousel = carouselRequest.data?.success
+    ? carouselRequest.data.carousel
+    : null;
+  const shippingSettings = shippingRequest.data?.success
+    ? shippingRequest.data.settings
+    : null;
 
-    const fetchSettings = async () => {
-      try {
-        const [carouselResult, shippingResult] =
-          await Promise.allSettled([
-            fetch(`${API_URL}/api/settings/promo-carousel`),
-            fetch(`${API_URL}/api/settings/shipping`),
-          ]);
-
-        // Fetch promo carousel messages
-        if (
-          carouselResult.status === "fulfilled" &&
-          carouselResult.value.ok
-        ) {
-          const data = await carouselResult.value.json();
-
-          if (isMounted && data.success && data.carousel) {
-            setCarousel(data.carousel);
-          }
-        } else {
-          console.error("Failed to fetch promo carousel settings.");
-        }
-
-        // Fetch shipping settings
-        if (
-          shippingResult.status === "fulfilled" &&
-          shippingResult.value.ok
-        ) {
-          const data = await shippingResult.value.json();
-
-          if (isMounted && data.success && data.settings) {
-            setShippingSettings(data.settings);
-          }
-        } else {
-          console.error("Failed to fetch shipping settings.");
-        }
-      } catch (error) {
-        console.error("Promo carousel error:", error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchSettings();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // Reserve the strip's height while settings load: it sits at the very
+  // top of the page, so appearing late would push everything down.
+  if (loading) {
+    return <div className="h-[51px] w-full sm:h-[59px]" aria-hidden="true" />;
+  }
 
   // Wait until both settings have loaded before displaying messages.
   if (
-    loading ||
     !carousel ||
     !carousel.isVisible ||
     !shippingSettings
@@ -191,6 +153,8 @@ function PromoCarousel() {
                   <img
                     src="/OstikLogo/OSTIK_PNG.png"
                     alt=""
+                    width={600}
+                    height={424}
                     className="h-auto w-[38px] shrink-0 object-contain sm:w-[50px]"
                   />
                 </div>

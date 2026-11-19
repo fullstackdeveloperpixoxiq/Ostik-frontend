@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Checkout = () => {
   const navigate = useNavigate();
 
@@ -698,7 +699,7 @@ const grandTotal = subtotal + shippingFee;
 
             <div className="shrink-0 px-2 sm:px-6 flex items-center justify-center">
               <img
-                src="\OstikLogo\OSTIK_PNG.png"
+                src="\OstikLogo\OSTIK_PNG.png" width={600} height={424}
                 alt="LOGO"
                 className="w-[150px] h-auto object-contain sm:w-[150px]"
               />
@@ -1315,7 +1316,8 @@ const grandTotal = subtotal + shippingFee;
 
                           <div className="relative w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
 
-                            <img
+                            <SmartImage
+                              maxWidth={160}
                               src={
                                 product
                                   ?.images?.[0] ||

@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -354,7 +355,8 @@ const grandTotal = subtotal + shipping;
           onClick={() => navigate(`/product/${product?._id}`)}
           className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-300 hover:border-gray-200 hover:shadow-md sm:h-32 sm:w-32"
         >
-          <img
+          <SmartImage
+            maxWidth={200}
             src={product?.images?.[0] || ""}
             alt={product?.name || "Product"}
             className="h-full w-full object-contain p-3 transition-transform duration-300 hover:scale-105"

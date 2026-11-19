@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import Navbar from "../../Components/Navbar/Navbar";
 import Footer from "../../Components/Footer/Footer";
 
+import SmartImage from "../../Components/Common/SmartImage";
 const Exchange = () => {
   const { orderId, itemId } = useParams();
   const navigate = useNavigate();
@@ -358,7 +359,8 @@ const Exchange = () => {
 
               <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                 {item?.image ? (
-                  <img
+                  <SmartImage
+                    maxWidth={160}
                     src={item.image}
                     alt={item.name}
                     className="h-full w-full object-contain"

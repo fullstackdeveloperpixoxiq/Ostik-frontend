@@ -23,6 +23,7 @@ import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
 import axios from "axios";
 
+import SmartImage from "../Common/SmartImage";
 const Orders = () => {
   const navigate = useNavigate();
 
@@ -1416,7 +1417,8 @@ const Orders = () => {
 
                                   {item.image ? (
 
-                                    <img
+                                    <SmartImage
+                                      maxWidth={160}
                                       src={
                                         item.image
                                       }
@@ -2157,7 +2159,8 @@ const Orders = () => {
 
                   {selectedProduct.image ? (
 
-                    <img
+                    <SmartImage
+                      maxWidth={160}
                       src={
                         selectedProduct.image
                       }

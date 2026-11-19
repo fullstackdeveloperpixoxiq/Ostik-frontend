@@ -11,6 +11,13 @@ import {
   Star,
 } from "lucide-react";
 import axios from "axios";
+import {
+  cachedGet,
+  peekCached,
+  fetchWishlistIds,
+  STATIC_TTL,
+} from "../../utils/apiCache";
+import SmartImage from "../Common/SmartImage";
 import { toast } from "sonner";
 
 import Navbar from "../Navbar/Navbar";
@@ -22,11 +29,62 @@ const Products = () => {
   const categorySlug = searchParams.get("category");
   const searchQuery = searchParams.get("search");
 
-  const [products, setProducts] = useState([]);
-  const [categoryName, setCategoryName] = useState("");
+  // One request per listing view. Main categories include their
+  // subcategories server-side (previously 1 request per subcategory).
+  const productParams = useMemo(
+    () => ({
+      ...(categorySlug
+        ? { category: categorySlug, includeSubcategories: "true" }
+        : {}),
+      ...(searchQuery ? { search: searchQuery } : {}),
+    }),
+    [categorySlug, searchQuery]
+  );
 
-  const [loading, setLoading] = useState(true);
+  // What to show for a view before its request finishes: a previously
+  // loaded copy of this exact view (fresh prices/stock are still fetched),
+  // otherwise the loading skeleton.
+  const initialViewState = () => {
+    const cached = peekCached("/api/product", { params: productParams });
+    const knownCategories = peekCached("/api/category")?.data?.categories;
+
+    return {
+      products: cached?.data?.products || [],
+      loading: !cached,
+      categoryName: categorySlug
+        ? knownCategories?.find((category) => category.slug === categorySlug)
+            ?.name || ""
+        : "",
+    };
+  };
+
+  const [products, setProducts] = useState(() => initialViewState().products);
+  const [categoryName, setCategoryName] = useState(
+    () => initialViewState().categoryName
+  );
+
+  const [loading, setLoading] = useState(() => initialViewState().loading);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  // When the category / search changes, reset the view during render
+  // (React's recommended pattern instead of setState inside an effect).
+  const [viewParams, setViewParams] = useState(productParams);
+
+  if (viewParams !== productParams) {
+    const next = initialViewState();
+    setViewParams(productParams);
+    setProducts(next.products);
+    setCategoryName(next.categoryName);
+    setLoading(next.loading);
+    setError("");
+  }
+
+  const retryProducts = () => {
+    setError("");
+    setLoading(true);
+    setReloadKey((key) => key + 1);
+  };
 
   // =========================================================
   // WISHLIST STATES
@@ -63,153 +121,75 @@ const Products = () => {
   // =========================================================
 
   useEffect(() => {
+    let active = true;
+
+    // Whether something is already on screen for this view.
+    const cached = peekCached("/api/product", {
+      params: productParams,
+    });
+
     const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      // Products and the category name are independent -> fetched in
+      // parallel. Categories come from the shared, cached request.
+      const [productResult, categoryResult] = await Promise.allSettled([
+        cachedGet("/api/product", { params: productParams }),
+        categorySlug
+          ? cachedGet("/api/category", { ttl: STATIC_TTL })
+          : Promise.resolve(null),
+      ]);
 
-        //no category
-        if (!categorySlug) {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product`,
-          {
-            params: searchQuery
-              ? { search: searchQuery }
-              : {},
-          }
+      if (!active) return;
+
+      if (categorySlug) {
+        const categories =
+          categoryResult.status === "fulfilled"
+            ? categoryResult.value?.data?.categories || []
+            : [];
+
+        const selectedCategory = categories.find(
+          (category) => category.slug === categorySlug
         );
-        setProducts(response.data.products || []);
+
+        setCategoryName(selectedCategory?.name || "");
+      } else {
         setCategoryName("");
-        return
       }
-      //fetch categories
-      const categoryResponse= await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/category`
-      );
 
-      const categories= categoryResponse.data.categories ||
-      categoryResponse.data || []
-
-      // Find selected category
-      const selectedCategory = categories.find(
-        (category) =>
-          category.slug === categorySlug
-      );
-
-      if (!selectedCategory) {
-        setProducts([]);
-        setCategoryName("");
+      if (productResult.status === "fulfilled") {
+        setProducts(productResult.value.data?.products || []);
+        setLoading(false);
         return;
       }
 
-      //find subcategories
-      const subcategories= categories.filter(
-        (category)=>{
-          const parentId =
-            typeof category.parentCategory === "object"
-              ? category.parentCategory?._id
-              : category.parentCategory;
+      const err = productResult.reason;
 
-          return (
-            parentId?.toString() ===
-            selectedCategory._id?.toString()
-          );
-      });
-      
-      //main category
-      const isMainCategory =
-        !selectedCategory.parentCategory;
-
-      let fetchedProducts = [];
-
-      if (isMainCategory && subcategories.length > 0) {
-        const categorySlugs = [
-          selectedCategory.slug,
-          ...subcategories.map(
-            (category) => category.slug
-          ),
-        ];
-
-        const responses = await Promise.all(
-          categorySlugs.map((slug) =>
-            axios.get(
-              `${import.meta.env.VITE_API_URL}/api/product`,
-              {
-                params: {
-                  category: slug,
-                  ...(searchQuery
-                    ? { search: searchQuery }
-                    : {}),
-                },
-    }
-)
- )
-);
-// Combine all products
-        fetchedProducts = responses.flatMap(
-          (response) =>
-            response.data.products || []
-        );
-
-        // Remove duplicate products
-        const uniqueProducts = Array.from(
-          new Map(
-            fetchedProducts.map((product) => [
-              product._id,
-              product,
-            ])
-          ).values()
-        );
-
-        fetchedProducts = uniqueProducts;
-
-      } else {
-
-        //fetch only that category
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product`,
-          {
-            params: {
-              category: categorySlug,
-              ...(searchQuery
-                ? { search: searchQuery }
-                : {}),
-            },
-          }
-        );
-
-        fetchedProducts =
-          response.data.products || [];
+      // Unknown / inactive category: show the normal empty state.
+      if (err?.response?.status === 404) {
+        setProducts([]);
+        setLoading(false);
+        return;
       }
 
-//set product
- setProducts(fetchedProducts);
+      console.error("PRODUCT FETCH ERROR:", err);
 
-      // Use selected category name
-      setCategoryName(
-        selectedCategory.name || ""
-      );
+      // Keep already displayed products if a refresh fails.
+      if (!cached) {
+        setProducts([]);
+        setError(
+          err?.response?.data?.message ||
+            "Failed to fetch products"
+        );
+      }
 
-    } catch (err) {
-      console.error(
-        "PRODUCT FETCH ERROR:",
-        err
-      );
-
-      setProducts([]);
-
-      setError(
-        err.response?.data?.message ||
-          "Failed to fetch products"
-      );
-    } finally {
       setLoading(false);
+    };
 
-        }
-  };
+    fetchProducts();
 
-  fetchProducts();
-}, [categorySlug, searchQuery]);
+    return () => {
+      active = false;
+    };
+  }, [productParams, categorySlug, reloadKey]);
        
     
   // =========================================================
@@ -217,62 +197,25 @@ const Products = () => {
   // =========================================================
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
+    let active = true;
 
-      // Login cheythittillenkil wishlist fetch venda
-      if (!token) {
-        setWishlistProducts([]);
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const products =
-          response.data.wishlist?.products || [];
-
-        /*
-          Backend populated products aanenkil:
-          { _id: "...", name: "...", ... }
-
-          Populate cheyyathath aanenkil:
-          "...productId..."
-
-          Randum handle cheyyunnu.
-        */
-
-        setWishlistProducts(
-          products
-            .map((product) =>
-              typeof product === "string"
-                ? product
-                : product?._id
-            )
-            .filter(Boolean)
-        );
-      } catch (error) {
-        console.error(
-          "WISHLIST FETCH ERROR:",
-          error
-        );
+    fetchWishlistIds()
+      .then((ids) => {
+        if (active) setWishlistProducts(ids);
+      })
+      .catch((error) => {
+        console.error("WISHLIST FETCH ERROR:", error);
 
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          setWishlistProducts([]);
+          if (active) setWishlistProducts([]);
         }
-      }
-    };
+      });
 
-    fetchWishlist();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // =========================================================
@@ -733,35 +676,123 @@ const Products = () => {
     }
   };
 
+  // Static page header (breadcrumb + title). Rendered immediately, also
+  // while products load, so only the grid area waits for data.
+  const collectionHeader = (
+    <>
+      {/* =====================================================
+          COLLECTION HEADER
+      ====================================================== */}
+
+      <div className="border-b border-gray-100">
+        <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-8 sm:py-8 lg:px-12">
+
+          {/* BREADCRUMB */}
+
+          <div className="mb-7 flex items-center justify-center gap-2 text-xs text-gray-400">
+
+            <span>Home</span>
+
+            <ChevronRight size={13} />
+
+            <span>Products</span>
+
+            {categoryName && !searchQuery && (
+              <>
+                <ChevronRight size={13} />
+
+                <span className="text-gray-700">
+                  {categoryName}
+                </span>
+              </>
+            )}
+
+            {searchQuery && (
+              <>
+              <ChevronRight size={13}/>
+              <span className="text-gray-700">
+                Search
+              </span>
+              </>
+            )}
+
+          </div>
+
+          {/* TITLE */}
+
+          <div className="text-center">
+
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[3px] text-[#72c500]">
+              OSTIK COLLECTION
+            </p>
+
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[42px]">
+              {searchQuery ? 
+              `Search result for "${searchQuery}"`
+              : categoryName || "All Products"}
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-[600px] text-sm leading-6 text-gray-500">
+              Explore our collection of reliable and modern
+              technology accessories designed for everyday use.
+            </p>
+
+          </div>
+
+        </div>
+      </div>
+    </>
+  );
+
   // =========================================================
   // LOADING
   // =========================================================
 
   if (loading) {
+    // Skeleton in the shape of the real grid (instead of a blank spinner
+    // page) so the layout is stable when products arrive.
     return (
       <>
         <Navbar />
 
-        <section className="min-h-[70vh] bg-white">
-          <div className="flex min-h-[500px] items-center justify-center">
-            <div className="text-center">
-              <div
-                className="
-                  mx-auto
-                  h-9
-                  w-9
-                  animate-spin
-                  rounded-full
-                  border-2
-                  border-gray-200
-                  border-t-[#72c500]
-                "
-              />
+        <section className="min-h-screen bg-[#F8F9F6]" aria-busy="true">
+          {collectionHeader}
 
-              <p className="mt-4 text-sm text-gray-500">
-                Loading products...
-              </p>
+          {/* filter / sort bar placeholder (same height as the real bar) */}
+          <div className="h-[63px] border-b border-gray-200 bg-white sm:h-[75px]" />
+
+          <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-8 sm:py-8 lg:px-12">
+
+            <div className="flex gap-8">
+              <aside className="hidden w-[250px] shrink-0 lg:block">
+                <div className="space-y-4">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="h-24 animate-pulse rounded-xl bg-gray-200"
+                    />
+                  ))}
+                </div>
+              </aside>
+
+              <div className="grid flex-1 grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((item) => (
+                  <div
+                    key={item}
+                    className="overflow-hidden rounded-2xl bg-white p-3"
+                  >
+                    <div className="aspect-square animate-pulse rounded-xl bg-gray-200" />
+                    <div className="mt-4 space-y-3">
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                      <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+                      <div className="h-5 w-1/3 animate-pulse rounded bg-gray-200" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            <span className="sr-only">Loading products...</span>
           </div>
         </section>
 
@@ -789,6 +820,14 @@ const Products = () => {
               <p className="mt-2 text-sm text-red-500">
                 {error}
               </p>
+
+              <button
+                type="button"
+                onClick={retryProducts}
+                className="mt-5 rounded-full bg-black px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Try again
+              </button>
             </div>
           </div>
         </section>
@@ -804,67 +843,7 @@ const Products = () => {
 
       <section className="min-h-screen bg-[#F8F9F6]">
 
-        {/* =====================================================
-            COLLECTION HEADER
-        ====================================================== */}
-
-        <div className="border-b border-gray-100">
-          <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-8 sm:py-8 lg:px-12">
-
-            {/* BREADCRUMB */}
-
-            <div className="mb-7 flex items-center justify-center gap-2 text-xs text-gray-400">
-
-              <span>Home</span>
-
-              <ChevronRight size={13} />
-
-              <span>Products</span>
-
-              {categoryName && !searchQuery && (
-                <>
-                  <ChevronRight size={13} />
-
-                  <span className="text-gray-700">
-                    {categoryName}
-                  </span>
-                </>
-              )}
-
-              {searchQuery && (
-                <>
-                <ChevronRight size={13}/>
-                <span className="text-gray-700">
-                  Search
-                </span>
-                </>
-              )}
-
-            </div>
-
-            {/* TITLE */}
-
-            <div className="text-center">
-
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[3px] text-[#72c500]">
-                OSTIK COLLECTION
-              </p>
-
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[42px]">
-                {searchQuery ? 
-                `Search result for "${searchQuery}"`
-                : categoryName || "All Products"}
-              </h1>
-
-              <p className="mx-auto mt-4 max-w-[600px] text-sm leading-6 text-gray-500">
-                Explore our collection of reliable and modern
-                technology accessories designed for everyday use.
-              </p>
-
-            </div>
-
-          </div>
-        </div>
+        {collectionHeader}
 
         {/* =====================================================
             FILTER & SORT BAR
@@ -1501,8 +1480,10 @@ const Products = () => {
                           >
 
                             {product.images?.length > 0 ? (
-                              <img
+                              <SmartImage
                                 src={product.images[0]}
+                                maxWidth={360}
+                                sizes="(min-width: 1280px) 360px, (min-width: 1024px) 40vw, 50vw"
                                 alt={product.name}
                                 className="
                                   h-full

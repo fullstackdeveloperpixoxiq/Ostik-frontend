@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import { Heart, ArrowRight, Star, GiftIcon } from "lucide-react";
 import axios from "axios";
+import useCachedGet from "../../utils/useCachedGet";
+import { fetchWishlistIds } from "../../utils/apiCache";
+import SmartImage from "../Common/SmartImage";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+// Only the 4 newest products are shown; the API returns them with their
+// active variants (no full-catalogue download, no per-product requests).
+const LATEST_PARAMS = { limit: 4 };
+
 const LatestProducts = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Prices and stock are always re-fetched; a previous response (if any)
+  // is shown meanwhile so returning to the page is instant.
+  const { data, loading } = useCachedGet("/api/product", {
+    params: LATEST_PARAMS,
+  });
+  const products = data?.products || [];
 
   // =====================================
   // WISHLIST STATE
@@ -17,85 +28,31 @@ const LatestProducts = () => {
   const navigate = useNavigate();
 
   // =====================================
-  // FETCH LATEST PRODUCTS
-  // =====================================
-  useEffect(() => {
-    const fetchLatestProducts = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/product`
-        );
-
-        // Backend sorts products by createdAt DESC
-        const latestProducts = response.data.products || [];
-
-        // Show only latest 4 products
-        setProducts(latestProducts.slice(0, 4));
-      } catch (error) {
-        console.log(
-          "Error fetching latest products:",
-          error
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLatestProducts();
-  }, []);
-
-  // =====================================
   // FETCH USER WISHLIST
   // =====================================
   useEffect(() => {
-    const fetchWishlist = async () => {
-      const token = localStorage.getItem("token");
+    let active = true;
 
-      // User not logged in
-      if (!token) {
-        setWishlistProducts([]);
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/wishlist`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const wishlist =
-          response.data.wishlist?.products || [];
-
-        setWishlistProducts(
-          wishlist
-            .map((product) =>
-              typeof product === "string"
-                ? product
-                : product?._id
-            )
-            .filter(Boolean)
-        );
-      } catch (error) {
-        console.log(
-          "Error fetching wishlist:",
-          error
-        );
+    // One shared request for every section on the page.
+    fetchWishlistIds()
+      .then((ids) => {
+        if (active) setWishlistProducts(ids);
+      })
+      .catch((error) => {
+        console.error("WISHLIST FETCH ERROR:", error);
 
         // Token expired
         if (error.response?.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
 
-          setWishlistProducts([]);
+          if (active) setWishlistProducts([]);
         }
-      }
-    };
+      });
 
-    fetchWishlist();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // =====================================
@@ -243,58 +200,6 @@ const LatestProducts = () => {
     );
   };
 
-  // =====================================
-  // FETCH VARIANTS FOR EACH PRODUCT
-  // =====================================
-  useEffect(() => {
-    const fetchVariants = async () => {
-      if (!products.length) return;
-
-      try {
-        const productsWithVariants =
-          await Promise.all(
-            products.map(
-              async (product) => {
-                try {
-                  const response =
-                    await axios.get(
-                      `${import.meta.env.VITE_API_URL}/api/variant/product/${product._id}`
-                    );
-
-                  return {
-                    ...product,
-                    variants:
-                      response.data
-                        .variants || [],
-                  };
-                } catch (error) {
-                  console.log(
-                    `Error fetching variants for ${product.name}`,
-                    error
-                  );
-
-                  return {
-                    ...product,
-                    variants: [],
-                  };
-                }
-              }
-            )
-          );
-
-        setProducts(
-          productsWithVariants
-        );
-      } catch (error) {
-        console.log(
-          "Error fetching product variants:",
-          error
-        );
-      }
-    };
-
-    fetchVariants();
-  }, [products.length]);
 
   // =====================================
   // LOADING
@@ -419,8 +324,10 @@ const LatestProducts = () => {
               <div className="relative aspect-square overflow-hidden bg-gray-100">
 
                 {image && (
-                  <img
+                  <SmartImage
                     src={image}
+                    maxWidth={300}
+                    sizes="(min-width: 1024px) 300px, 50vw"
                     alt={product.name}
                     className="h-full w-full cursor-pointer object-contain transition-transform duration-500 group-hover:scale-105"
                     onClick={() =>

@@ -56,7 +56,7 @@ const ForgotPassword = () => {
         <div className="flex justify-center items-center mb-7">
           <Link to="/">
             <img
-              src="/OstikLogo/OSTIK_PNG.png"
+              src="/OstikLogo/OSTIK_PNG.png" width={600} height={424}
               alt="OSTIK"
               className="w-[120px] h-auto object-contain"
             />

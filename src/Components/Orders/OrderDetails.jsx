@@ -19,6 +19,7 @@ import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
 import OrderTracking from "../OrderTracking/OrderTracking";
 
+import SmartImage from "../Common/SmartImage";
 const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -707,7 +708,8 @@ const OrderDetails = () => {
 
                       <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
                         {item.image ? (
-                          <img
+                          <SmartImage
+                            maxWidth={160}
                             src={item.image}
                             alt={item.name}
                             className="h-full w-full object-contain p-2"

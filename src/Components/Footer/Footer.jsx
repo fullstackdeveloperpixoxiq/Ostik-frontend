@@ -142,7 +142,7 @@ const Footer = () => {
             <div className="mb-5">
 
               <img
-                src="\OstikLogo\osticLogo2.png"
+                src="\OstikLogo\osticLogo2.png" width={600} height={178}
                 alt="LOGO"
                 className="h-auto w-[130px] object-contain sm:w-[150px]"
               />

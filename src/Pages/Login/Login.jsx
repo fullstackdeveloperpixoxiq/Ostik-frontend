@@ -72,7 +72,7 @@ finally {
             to="/"
             className="text-[29px] font-black tracking-[-1.5px] text-[#171717]"
           >
-            <img src="\OstikLogo\OSTIK_PNG.png" alt="OSTIK" 
+            <img src="\OstikLogo\OSTIK_PNG.png" width={600} height={424} alt="OSTIK" 
             className="w-[120px] h-auto object-contain"/>
           </Link>
         </div>
