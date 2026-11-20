@@ -1352,7 +1352,9 @@ useEffect(() => {
               </a>
 
               <a
-                href="/whatsapp"
+                href="https://wa.me/918590497358"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="
                   flex
                   items-center
@@ -2096,7 +2098,9 @@ useEffect(() => {
               </a>
 
               <a
-                href="/whatsapp"
+                href="https://wa.me/918590497358"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="
                   w-fit
                   flex
