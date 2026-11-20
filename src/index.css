@@ -6,3 +6,10 @@ body,
   min-height: 100%;
   background-color: #FFFFFF;
 }
+/* Tailwind v4 resets buttons to cursor: default — restore pointer */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

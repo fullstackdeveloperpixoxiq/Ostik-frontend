@@ -893,7 +893,7 @@ useEffect(() => {
 
               <button
                 type="button"
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/profile")}
                 className="
                   text-white
                   hover:text-[#00ff03]
@@ -1338,18 +1338,6 @@ useEffect(() => {
                 Orders
               </a>
 
-              <a
-                href="/profile"
-                className="
-                  text-[15px]
-                  text-gray-500
-                  hover:text-[#00e603]
-                  transition-colors
-                  duration-300
-                "
-              >
-                Profile
-              </a>
 
               <a
                 href="https://wa.me/918590497358"
